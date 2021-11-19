@@ -1,0 +1,19 @@
+[
+  {"client":{
+    "clientName":"worldgenebreath","clientIP":"172.29.208.1","clientPortUDP":"7884","clientPortTCP":"3204","isRegistered":true}},
+  {"client":{
+    "clientName":"worldkingstamp","clientIP":"172.29.208.1","clientPortUDP":"3573","clientPortTCP":"9695","isRegistered":true}},
+  {"client":{
+    "clientName":"genesongmessage","clientIP":"172.29.208.1","clientPortUDP":"2303","clientPortTCP":"1071","isRegistered":true}},
+  {"client":{
+  "clientName":"midnightriversong","clientIP":"172.29.208.1","clientPortUDP":"4007","clientPortTCP":"1170","isRegistered":true}},
+  {"client":{
+    "clientName":"nightsharkgene","clientIP":"172.29.208.1","clientPortUDP":"4480","clientPortTCP":"1504","isRegistered":true}},
+  {"client":{
+    "clientName":"sharkmidnightshark","clientIP":"172.29.208.1","clientPortUDP":"2172","clientPortTCP":"7591","isRegistered":true}},
+  {"client":{
+    "clientName":"freedombirdmap","clientIP":"172.29.208.1","clientPortUDP":"4383","clientPortTCP":"6676","isRegistered":true}},
+  {"client":{
+    "clientName":"midnightsouprestaurant","clientIP":"172.29.208.1","clientPortUDP":"3746","clientPortTCP":"7100","isRegistered":true}},
+  {"client":{
+    "clientName":"restaurantsonclothes","clientIP":"172.29.208.1","clientPortUDP":"3406","clientPortTCP":"5775","isRegistered":true}}]
