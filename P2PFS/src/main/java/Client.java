@@ -94,6 +94,7 @@ public class Client {
 
 
         Scanner scannerInput = new Scanner(System.in);
+        Scanner scannerFileInput = new Scanner(System.in);
 
         /*
         / make static
@@ -112,15 +113,15 @@ public class Client {
             input = input.toUpperCase();
             switch(input) {
                 case "REGISTER":
-                    System.out.println("REGISTER Command sent to server");
                     Gson jsonObject = new Gson();
                     String jsonString = jsonObject.toJson(client);
                     String message = "REGISTER@" + Client.RQ + "@" + jsonString + "\n";
-                    Client.RQ++;
                     buffer = message.getBytes();
                     DatagramPacket dPacketSend = new DatagramPacket(buffer, buffer.length, serverIP, serverPortUDP);
 
                     datagramSocket.send(dPacketSend);
+                    System.out.println("RQ# " + Client.RQ + " REGISTER Command sent to server");
+                    Client.RQ++;
                     break;
                 case "DE-REGISTER":
                     System.out.println("DE-REGISTER Command sent to server");
@@ -128,8 +129,19 @@ public class Client {
                 case "PUBLISH":
                     System.out.println("PUBLISH Command sent to server");
                     break;
-                case "REMOVED":
-                    System.out.println("REMOVED Command sent to server");
+                case "REMOVE":
+                    System.out.println("\nSpecify file(s) to be removed. Separate with spaces.");
+                    String inputFile = scannerFileInput.nextLine();
+                    String[] inputFiles = inputFile.split("\\s+");
+                    StringBuilder files = new StringBuilder();
+                    for (int i = 0; i < inputFiles.length; i++) {
+                        files.append(inputFiles[i] + " ");
+                    }
+                    System.out.println(files);
+                    String messageToServer = "REMOVE " + Client.RQ + " " + files;
+                    System.out.println("RQ# " + Client.RQ + " REMOVE Command sent to server");
+                    System.out.println("messageToServer: " + messageToServer);
+                    Client.RQ++;
                     break;
                 case "RETRIEVE-ALL":
                     System.out.println("RETRIEVE-ALL Command sent to server");
@@ -142,26 +154,41 @@ public class Client {
                 default:
             }
 
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+
+
             boolean waiting = true;
             while (waiting) {
 
 
 
-                buffer = new byte[256];
+                byte buffer[] = new byte[256];
                 DatagramPacket dPacketReceive = new DatagramPacket(buffer, buffer.length);
 
-                datagramClientSocket.receive(dPacketReceive);
+                try {
+                    datagramClientSocket.receive(dPacketReceive);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 String messageFromServer = new String(dPacketReceive.getData(), 0, dPacketReceive.getLength());
 
-                if (messageFromServer.startsWith("REGISTERED")) {
 
-                    System.out.println("MESSAGE FROM SERVER: " + messageFromServer);
 
-                    waiting = false;
+
+                    if (messageFromServer.startsWith("REGISTER")) {
+                        System.out.println("MESSAGE FROM SERVER: " + messageFromServer);
+
+                        waiting = false;
+                    }
+
+
                 }
 
-            }
-
+                }
+            }).start();
 
         }
 

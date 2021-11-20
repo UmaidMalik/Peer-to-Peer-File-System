@@ -67,37 +67,17 @@ public class Server {
                     if (!containsClient) {
                         client.setRegistered(true);
                         clientsList.add(client);
+                        writeJsonDatabase(); // used to turn clientsList into array of JSON objects and write to Client.json
                     }
 
-                    ArrayList<JSONObject> jsonClient = new ArrayList<JSONObject>();
-                    ArrayList<JSONObject> jsonObjects = new ArrayList<JSONObject>();
-                    JSONArray clientJSONArray = new JSONArray();
-                    for (int j = 0; j < clientsList.size(); j++) {
-                        jsonClient.add(new JSONObject());
-                        jsonObjects.add(new JSONObject());
-                    }
-
-                    for (int k = 0; k < jsonObjects.size(); k++) {
-
-                        jsonClient.get(k).put("clientName", clientsList.get(k).getClientName());
-                        jsonClient.get(k).put("clientIP", clientsList.get(k).getClientIP().getHostAddress());
-                        jsonClient.get(k).put("clientPortUDP", clientsList.get(k).getClientPortUDP());
-                        jsonClient.get(k).put("clientPortTCP", clientsList.get(k).getClientPortTCP());
-                        jsonClient.get(k).put("isRegistered", clientsList.get(k).isRegistered());
-                        jsonObjects.get(k).put("client", jsonClient.get(k));
-                        clientJSONArray.add(jsonObjects.get(k));
-                    }
-
-                    try (FileWriter fileWriter = new FileWriter(pathClientJSON)) {
-                        fileWriter.write(clientJSONArray.toJSONString());
-                        fileWriter.flush();
-                    }
 
                     System.out.println("\n");
                     System.out.println("RQ#: " + messages[1]);
-                    System.out.println("RECEIVED REQUEST: " + messages[0] + client.info());
-                    System.out.println("CLIENT REGISTERED");
-                    System.out.println("isRegistered: " + client.isRegistered());
+                    System.out.println("RECEIVED REQUEST: " + messages[0] + client.info() + "\n");
+                    if (client.isRegistered())
+                        System.out.println("CLIENT REGISTERED");
+                    else
+                        System.out.println("CLIENT NOT REGISTERED: Client name exists already");
 
                     if (client.isRegistered()) {
 
@@ -111,6 +91,7 @@ public class Server {
                     }
 
                 }
+
 
             }
 
@@ -208,6 +189,33 @@ public class Server {
             });
         } catch (ParseException | IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void writeJsonDatabase() throws IOException {
+
+        ArrayList<JSONObject> jsonClient = new ArrayList<JSONObject>();
+        ArrayList<JSONObject> jsonObjects = new ArrayList<JSONObject>();
+        JSONArray clientJSONArray = new JSONArray();
+        for (int j = 0; j < clientsList.size(); j++) {
+            jsonClient.add(new JSONObject());
+            jsonObjects.add(new JSONObject());
+        }
+
+        for (int k = 0; k < jsonObjects.size(); k++) {
+
+            jsonClient.get(k).put("clientName", clientsList.get(k).getClientName());
+            jsonClient.get(k).put("clientIP", clientsList.get(k).getClientIP().getHostAddress());
+            jsonClient.get(k).put("clientPortUDP", clientsList.get(k).getClientPortUDP());
+            jsonClient.get(k).put("clientPortTCP", clientsList.get(k).getClientPortTCP());
+            jsonClient.get(k).put("isRegistered", clientsList.get(k).isRegistered());
+            jsonObjects.get(k).put("client", jsonClient.get(k));
+            clientJSONArray.add(jsonObjects.get(k));
+        }
+
+        try (FileWriter fileWriter = new FileWriter(pathClientJSON)) {
+            fileWriter.write(clientJSONArray.toJSONString());
+            fileWriter.flush();
         }
     }
 }
