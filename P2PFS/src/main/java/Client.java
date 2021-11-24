@@ -9,16 +9,23 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Client {
 
     public static int RQ = 0;
 
-    // private static String ip = "255.255.255";
+    //private static String ip = "172.29.208.1";
     private static String ip = "localhost";
     private static InetAddress serverIP;
     private static int serverPortUDP = 4269;
+    private static final String pathDownloads = "src/main/downloads/";
+    private static final String pathFiles = "src/main/files/";
 
     static {
         try {
@@ -28,19 +35,25 @@ public class Client {
         }
     }
 
+    private static DatagramSocket datagramSocket;
+    private static DatagramSocket datagramClientSocket;
+    private static DatagramPacket dPacketSend;
+    private static int clientSocketPort = 1000;
+    private static Client staticClient;
+
     private String clientName;
     private InetAddress clientIP;
     private String clientPortUDP;
     private String clientPortTCP;
-    private boolean isRegistered;
+    private ArrayList<String> listOfFiles;
+
 
     public Client(String clientName, InetAddress clientIP, String clientPortUDP, String clientPortTCP) {
         this.clientName = clientName;
         this.clientIP = clientIP;
         this.clientPortUDP = clientPortUDP;
         this.clientPortTCP = clientPortTCP;
-        this.isRegistered = false;
-
+        this.listOfFiles = new ArrayList<String>();
     }
 
     public Client() {
@@ -48,7 +61,7 @@ public class Client {
         this.clientIP = null;
         this.clientPortUDP = "";
         this.clientPortTCP = "";
-        this.isRegistered = false;
+        this.listOfFiles = new ArrayList<String>();
     }
 
     public void generateClient() throws UnknownHostException {
@@ -63,7 +76,7 @@ public class Client {
         System.out.println("Retrieving your IP address...");
         this.clientIP = InetAddress.getLocalHost();
         System.out.println("Get host name: " + InetAddress.getLocalHost().getHostAddress());
-
+        System.out.println(InetAddress.getLocalHost().toString());
 
         // Generate port number for UDP and TCP, range of 1000 - 9999
         int min = 1000; int max = 9999;
@@ -71,12 +84,11 @@ public class Client {
         int randomPortTCP = ThreadLocalRandom.current().nextInt(min, max + 1);
         this.clientPortUDP = String.valueOf(randomPortUDP);
         this.clientPortTCP = String.valueOf(randomPortTCP);
-
-        this.isRegistered = false;
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         Client client;
+        //ClientFiles clientFiles;
         if (args.length != 4 ||  // check if arguments are invalid, then generate a client
                 !validateIPv4(args[1]) ||
                 !validatePortNumber(args[2]) ||
@@ -93,106 +105,332 @@ public class Client {
         }
 
 
+        /*
         Scanner scannerInput = new Scanner(System.in);
         Scanner scannerFileInput = new Scanner(System.in);
 
-        /*
-        / make static
-         */
-        DatagramSocket datagramSocket = new DatagramSocket();
-        DatagramSocket datagramClientSocket = new DatagramSocket(Integer.parseInt(client.getClientPortUDP()));
 
+        //make static
 
+        datagramSocket = new DatagramSocket();
+        datagramClientSocket = new DatagramSocket(null);
+        datagramClientSocket.setReuseAddress(true);
+        datagramClientSocket.bind(new InetSocketAddress(client.getClientIP(), clientSocketPort));
 
-        byte buffer[] = null;
+        ClientReceiveRun clientReceiveRun = new ClientReceiveRun();
+        Thread clientReceiveThread;
 
+        DatagramClientSocketRun datagramClientSocketRun;
+        Thread datagramClientSocketThread;
+
+        datagramClientSocketRun = new DatagramClientSocketRun(client.getClientIP(), client.clientPortUDP);
+        datagramClientSocketThread = new Thread(datagramClientSocketRun);
+        datagramClientSocketThread.start();
+        */
+
+        client.startClient();
+
+/*
         System.out.println("Running...");
         while(true){
-            String input = scannerInput.nextLine();
 
+
+
+            String input = scannerInput.nextLine();
             input = input.toUpperCase();
             switch(input) {
+                case "1":
+                    client.changeClientInfo(datagramClientSocketRun, datagramClientSocketThread);
+                    break;
+                case "SIGNIN":
+                case "SIGN-IN":
+                case "LOGIN":
+                    break;
                 case "REGISTER":
-                    Gson jsonObject = new Gson();
-                    String jsonString = jsonObject.toJson(client);
-                    String message = "REGISTER@" + Client.RQ + "@" + jsonString + "\n";
-                    buffer = message.getBytes();
-                    DatagramPacket dPacketSend = new DatagramPacket(buffer, buffer.length, serverIP, serverPortUDP);
+                    Gson gson = new Gson();
+                    String jsonString = gson.toJson(client);
+                    String message = "REGISTER" + "*" + Client.RQ + "*" + jsonString + "\n";
+                    System.out.println("MESSAGE TO SERVER: " + "REGISTER" + " " + Client.RQ + " " + jsonString);
 
-                    datagramSocket.send(dPacketSend);
+                    messageToServer(message);
                     System.out.println("RQ# " + Client.RQ + " REGISTER Command sent to server");
                     Client.RQ++;
                     break;
+                case "DEREGISTER":
                 case "DE-REGISTER":
+                    message = "DE-REGISTER" + "*" + Client.RQ + "*" + client.getClientName();
+                    System.out.println("MESSAGE TO SERVER: " + "DE-REGISTER" + " " + Client.RQ + " " + client.getClientName());
+
+                    messageToServer(message);
                     System.out.println("DE-REGISTER Command sent to server");
+                    Client.RQ++;
                     break;
                 case "PUBLISH":
-                    System.out.println("PUBLISH Command sent to server");
+                    System.out.println("\nSpecify file(s) to be published. Separate with space(s). " +
+                            "Surround with quotations to encompass files containing spaces.");
+                    String inputFile = scannerFileInput.nextLine();
+                    String clientString;
+
+                    ArrayList<String> fileList = removeQuotes(inputFile);
+                    clientFiles = new ClientFiles(client.getClientName(), fileList);
+
+                    gson = new Gson();
+                    jsonString = gson.toJson(clientFiles);
+                    clientString = gson.toJson(client);
+                    message = "PUBLISH" + "*" + Client.RQ + "*" + jsonString + "*" + clientString;
+                    System.out.println("MESSAGE TO SERVER: " + "PUBLISH" + " " + Client.RQ + " " + jsonString);
+
+                    messageToServer(message);
+                    System.out.println("RQ# " + Client.RQ + " PUBLISH Command sent to server");
+                    Client.RQ++;
                     break;
                 case "REMOVE":
-                    System.out.println("\nSpecify file(s) to be removed. Separate with spaces.");
-                    String inputFile = scannerFileInput.nextLine();
-                    String[] inputFiles = inputFile.split("\\s+");
-                    StringBuilder files = new StringBuilder();
-                    for (int i = 0; i < inputFiles.length; i++) {
-                        files.append(inputFiles[i] + " ");
-                    }
-                    System.out.println(files);
-                    String messageToServer = "REMOVE " + Client.RQ + " " + files;
-                    System.out.println("RQ# " + Client.RQ + " REMOVE Command sent to server");
-                    System.out.println("messageToServer: " + messageToServer);
+                    System.out.println("\nSpecify file(s) to be removed. Separate with space(s). " +
+                            "Surround with quotations to encompass files containing spaces.");
+                    inputFile = scannerFileInput.nextLine();
+                    fileList = removeQuotes(inputFile);
+                    clientFiles = new ClientFiles(client.getClientName(), fileList);
+
+                    gson = new Gson();
+                    jsonString = gson.toJson(clientFiles);
+                    clientString = gson.toJson(client);
+                    message = "REMOVE" + "*" + Client.RQ + "*" + jsonString + "*" + clientString;
+                    System.out.println("MESSAGE TO SERVER: " + "REMOVE" + " " + Client.RQ + " " + jsonString);
+
+                    messageToServer(message);
+                    System.out.println("RQ# " + Client.RQ + " PUBLISH Command sent to server");
                     Client.RQ++;
                     break;
                 case "RETRIEVE-ALL":
                     System.out.println("RETRIEVE-ALL Command sent to server");
+                    Client.RQ++;
                     break;
-                case "RETRIEVE":
-                    System.out.println("RETRIEVE Command sent to server");
-                    break;
+                case "RETRIEVEINFOT":
                 case "RETRIEVE-INFOT":
                     System.out.println("RETRIEVE-INFOT Command sent to server");
+                    Client.RQ++;
+                    break;
+                case "SEARCHFILE":
+                case "SEARCH-FILE":
+                    break;
+                case "UPDATECONTACT":
+                case "UPDATE-CONTACT":
+                    Client newClient = new Client();
+                    newClient.changeClientInfo(datagramClientSocketRun, datagramClientSocketThread);
+                    gson = new Gson();
+                    jsonString = gson.toJson(client);
+                    String jsonNewClient = gson.toJson(newClient);
+                    message = "UPDATE-CONTACT" + "*" + Client.RQ + "*" + jsonString + "*" + jsonNewClient + "\n";
+                    System.out.println("MESSAGE TO SERVER: " + "UPDATE-CONTACT" + " " + Client.RQ + " " + jsonNewClient);
+
+                    messageToServer(message);
+                    System.out.println("UPDATE-CONTACT Command sent to server");
+                    Client.RQ++;
+                    break;
                 default:
             }
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-
-
-
-            boolean waiting = true;
-            while (waiting) {
-
-
-
-                byte buffer[] = new byte[256];
-                DatagramPacket dPacketReceive = new DatagramPacket(buffer, buffer.length);
-
-                try {
-                    datagramClientSocket.receive(dPacketReceive);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                String messageFromServer = new String(dPacketReceive.getData(), 0, dPacketReceive.getLength());
-
-
-
-
-                    if (messageFromServer.startsWith("REGISTER")) {
-                        System.out.println("MESSAGE FROM SERVER: " + messageFromServer);
-
-                        waiting = false;
-                    }
-
-
-                }
-
-                }
-            }).start();
-
+            clientReceiveThread = new Thread(clientReceiveRun);
+            clientReceiveThread.start();
         }
+        */
 
 
+    }
+
+    private void startClient() throws IOException {
+        String jsonString;
+        Gson gson;
+        Scanner scannerInput = new Scanner(System.in);
+        Scanner scannerFileInput = new Scanner(System.in);
+
+        datagramSocket = new DatagramSocket();
+        datagramClientSocket = new DatagramSocket(null);
+        datagramClientSocket.setReuseAddress(true);
+        datagramClientSocket.bind(new InetSocketAddress(this.clientIP, clientSocketPort));
+
+        ClientReceiveRun clientReceiveRun = new ClientReceiveRun();
+        Thread clientReceiveThread;
+
+        DatagramClientSocketRun datagramClientSocketRun;
+        Thread datagramClientSocketThread;
+
+        datagramClientSocketRun = new DatagramClientSocketRun(this.clientIP, this.clientPortUDP);
+        datagramClientSocketThread = new Thread(datagramClientSocketRun);
+        datagramClientSocketThread.start();
+
+        System.out.println("\nDEBUG: Enter 1 to recreate client data. FOR DEBUGGING PURPOSES ONLY" +
+                "\nUNEXPECTED BEHAVIOUR WILL RESULT IF USED IMPROPERLY");
+        System.out.println("Running client...");
+        while(true){
+
+            String input = scannerInput.nextLine();
+            input = input.toUpperCase();
+            input = input.replace(" ", "");
+            switch(input) {
+                case "1":
+                    changeClientInfo();
+                    rebindDatagramPort(datagramClientSocketRun, datagramClientSocketThread);
+                    break;
+                case "SIGNIN":
+                case "SIGN-IN":
+                case "LOGIN":
+                    break;
+                case "REGISTER":
+                    gson = new Gson();
+                    jsonString = gson.toJson(this);
+                    String message = "REGISTER" + "*" + Client.RQ + "*" + jsonString + "\n";
+                    System.out.println("MESSAGE TO SERVER: " + "REGISTER" + " " + Client.RQ + " " + this);
+
+                    messageToServer(message);
+                    System.out.println("RQ# " + Client.RQ + " REGISTER Command sent to server");
+                    Client.RQ++;
+                    break;
+                case "DEREGISTER":
+                case "DE-REGISTER":
+                    message = "DE-REGISTER" + "*" + Client.RQ + "*" + getClientName();
+                    System.out.println("MESSAGE TO SERVER: " + "DE-REGISTER" + " " + Client.RQ + " " + clientName);
+
+                    messageToServer(message);
+                    System.out.println("DE-REGISTER Command sent to server");
+                    Client.RQ++;
+                    break;
+                case "PUBLISH":
+                    System.out.println("\nSpecify file(s) to be published. Separate with space(s). " +
+                            "Surround with quotations to encompass files containing spaces.");
+                    String inputFile = scannerFileInput.nextLine();
+                    ArrayList<String> fileList = removeQuotes(inputFile);
+                    setListOfFiles(fileList);
+
+                    gson = new Gson();
+                    jsonString = gson.toJson(this);
+                    message = "PUBLISH" + "*" + Client.RQ + "*" + jsonString;
+                    System.out.println("MESSAGE TO SERVER: " + "PUBLISH" + " " + Client.RQ + " " + clientName + " " + listOfFiles.toString());
+
+                    messageToServer(message);
+                    setListOfFiles(new ArrayList<>());
+                    System.out.println("RQ# " + Client.RQ + " PUBLISH Command sent to server");
+                    Client.RQ++;
+                    break;
+                case "REMOVE":
+                    System.out.println("\nSpecify file(s) to be removed. Separate with space(s). " +
+                            "Surround with quotations to encompass files containing spaces.");
+                    inputFile = scannerFileInput.nextLine();
+                    fileList = removeQuotes(inputFile);
+                    setListOfFiles(fileList);
+
+                    gson = new Gson();
+                    jsonString = gson.toJson(this);
+                    message = "REMOVE" + "*" + Client.RQ + "*" + jsonString;
+                    System.out.println("MESSAGE TO SERVER: " + "REMOVE" + " " + Client.RQ + " " + clientName + " " + listOfFiles.toString());
+
+                    messageToServer(message);
+                    setListOfFiles(new ArrayList<>());
+                    System.out.println("RQ# " + Client.RQ + " PUBLISH Command sent to server");
+                    Client.RQ++;
+                    break;
+                case "RETRIEVE-ALL":
+                    System.out.println("RETRIEVE-ALL Command sent to server");
+                    Client.RQ++;
+                    break;
+                case "RETRIEVEINFOT":
+                case "RETRIEVE-INFOT":
+                    System.out.println("RETRIEVE-INFOT Command sent to server");
+                    Client.RQ++;
+                    break;
+                case "SEARCHFILE":
+                case "SEARCH-FILE":
+                    break;
+                case "UPDATECONTACT":
+                case "UPDATE-CONTACT":
+                    Client newClient = new Client();
+                    newClient.changeClientInfo();
+                    gson = new Gson();
+                    jsonString = gson.toJson(this);
+                    String jsonNewClient = gson.toJson(newClient);
+                    message = "UPDATE-CONTACT" + "*" + Client.RQ + "*" + jsonString + "*" + jsonNewClient + "\n";
+                    System.out.println("MESSAGE TO SERVER: " + "UPDATE-CONTACT" + " " + Client.RQ + " " + jsonNewClient);
+
+                    messageToServer(message);
+                    System.out.println("UPDATE-CONTACT Command sent to server");
+                    Client.RQ++;
+                    break;
+                default:
+            }
+            clientReceiveThread = new Thread(clientReceiveRun);
+            clientReceiveThread.start();
+        }
+    }
+
+    private static class DatagramClientSocketRun implements Runnable {
+
+        private InetAddress ip;
+        private String socketPort;
+
+        DatagramClientSocketRun(InetAddress ip, String socketPort) {
+            this.ip = ip;
+            this.socketPort = socketPort;
+        }
+        @Override
+        public void run() {
+
+            try {
+                datagramClientSocket = new DatagramSocket(null);
+                datagramClientSocket.setReuseAddress(true);
+                datagramClientSocket.bind(new InetSocketAddress(ip, Integer.parseInt(socketPort)));
+            } catch (SocketException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    private class ClientReceiveRun implements Runnable {
+
+        @Override
+        public void run() {
+
+                while (!datagramClientSocket.isClosed()) {
+                    byte buffer[] = new byte[256];
+
+                    // FOR DEBUG
+                    //System.out.println("BOUND DATAGRAM PORT: " + datagramClientSocket.getLocalPort());
+
+                    DatagramPacket dPacketReceive = new DatagramPacket(buffer, buffer.length);
+                    try {
+                        datagramClientSocket.receive(dPacketReceive);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    StringBuilder ret = new StringBuilder();
+                    int i = 0;
+                    byte current = buffer[0];
+                    while (current != 0) {
+                        ret.append((char) buffer[i]);
+                        i++;
+                        try {
+                            current = buffer[i];
+                        } catch (Exception e) {
+                            current = 0;
+                        }
+                    }
+                    String messageFromServer = ret.toString();
+                    String[] message;
+                    Gson gson;
+                    if (messageFromServer.startsWith("*")) {
+                        message = messageFromServer.split("\\*");
+                        System.out.println("MESSAGE FROM SERVER: " + message[1]);
+
+                    } else if (messageFromServer.startsWith("UPDATE-CONFIRMED")) {
+                        message = messageFromServer.split("\\*");
+                        gson = new Gson();
+
+                        Client client =  gson.fromJson(message[4], Client.class);
+
+                    } else if (messageFromServer.startsWith("UPDATE-DENIED")) {
+
+                    }
+            }
+        }
     }
 
     public String getClientName() {
@@ -227,12 +465,12 @@ public class Client {
         this.clientPortTCP = clientPortTCP;
     }
 
-    public boolean isRegistered() {
-        return isRegistered;
+    public ArrayList<String> getListOfFiles() {
+        return listOfFiles;
     }
 
-    public void setRegistered(boolean isRegistered) {
-        this.isRegistered = isRegistered;
+    public void setListOfFiles(ArrayList<String> listOfFiles) {
+        this.listOfFiles = listOfFiles;
     }
 
     public String info() {
@@ -246,13 +484,20 @@ public class Client {
                 "\nTCP SOCKET#: "   + getClientPortTCP();
     }
 
+    @Override
+    public String toString(){
+        String ipString = String.valueOf(getClientIP());
+        ipString = ipString.substring(ipString.lastIndexOf("/") + 1);
+        return getClientName() + " " + ipString + " " + getClientPortUDP() + " " + getClientPortTCP();
+    }
+
     /*
         This method validates if the IP address
         is in the format XXX.XXX.XXX.XXX
         where X is in the range of 0 to 255
      */
     public static boolean validateIPv4(String ipAddress) {
-
+        // XXX.XXX.XXX.XXX where X = [0-9]+
         String ipError = "The IP address format is incorrect: ";
 
         if (ipAddress.isBlank() || ipAddress.contains(" ")) {
@@ -264,8 +509,6 @@ public class Client {
             System.out.println(ipError + ipAddress + " contains non-integers");
             return false;
         }
-
-
 
         String[] splitValues = ipAddress.split("\\.");
         if (splitValues.length != 4) {
@@ -299,5 +542,69 @@ public class Client {
            return false;
        }
        return true;
+    }
+
+
+
+    public static ArrayList<String> removeQuotes(String inputFile) {
+        // This code was taken from
+        // https://stackoverflow.com/questions/366202/regex-for-splitting-a-string-using-space-when-not-surrounded-by-single-or-double
+        // Used for taking filenames surrounded by quotes ex. "file name.txt" as a single string of: file name.txt
+        /************************************************************************/
+        ArrayList<String> fileList = new ArrayList<String>();
+        Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
+        Matcher regexMatcher = regex.matcher(inputFile);
+        while (regexMatcher.find()) {
+            if (regexMatcher.group(1) != null) {
+                // Add double-quoted string without the quotes
+                fileList.add(regexMatcher.group(1));
+            } else if (regexMatcher.group(2) != null) {
+                // Add single-quoted string without the quotes
+                fileList.add(regexMatcher.group(2));
+            } else {
+                // Add unquoted word
+                fileList.add(regexMatcher.group());
+            }
+        }
+        /************************************************************************/
+        return fileList;
+    }
+
+    public static void messageToServer(String message) throws IOException {
+        byte[] buffer = message.getBytes();
+        DatagramPacket dPacketSend = new DatagramPacket(buffer, buffer.length, serverIP, serverPortUDP);
+        DatagramSocket datagramSocket = new DatagramSocket();
+        datagramSocket.send(dPacketSend);
+    }
+
+
+    public void changeClientInfo() throws UnknownHostException {
+        System.out.println("Enter Format: name ip udp tcp");
+
+        Scanner scannerInput = new Scanner(System.in);
+        String inputArgs = scannerInput.nextLine();
+        ArrayList<String> inputsList;
+        inputsList = removeQuotes(inputArgs);
+        if (inputsList.size() != 4 ||
+                !validateIPv4(inputsList.get(1)) ||
+                !validatePortNumber(inputsList.get(2)) ||
+                !validatePortNumber(inputsList.get(3))) {
+            System.out.println("\nInvalid inputs submitted. You can press 1 again to recreate client data.");
+        } else {
+            clientName = inputsList.get(0);
+            clientIP = InetAddress.getByName(inputsList.get(1));
+            clientPortUDP = String.valueOf(inputsList.get(2));
+            clientPortTCP = String.valueOf(inputsList.get(3));
+            System.out.println("Client created: " + this);
+            System.out.println(info());
+        }
+    }
+
+    public void  rebindDatagramPort(DatagramClientSocketRun datagramClientSocketRun,
+                                    Thread datagramClientSocketThread) {
+        // Rebind datagram port
+        datagramClientSocketRun = new DatagramClientSocketRun(getClientIP(), clientPortUDP);
+        datagramClientSocketThread = new Thread(datagramClientSocketRun);
+        datagramClientSocketThread.start();
     }
 }
