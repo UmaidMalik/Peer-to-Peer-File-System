@@ -199,13 +199,13 @@ public class Server {
                     case "UPDATE-CONTACT":
                         gson = new Gson();
                         Client clientOld = gson.fromJson(messages[2], Client.class);
+                        gson = new Gson();
                         Client clientNew = gson.fromJson(messages[3], Client.class);
 
                         boolean containsOldClient = false;
                         boolean containsNewClient = false;
 
-                        InetAddress ip = InetAddress.getByName("255.255.255.255");
-                        String port = "1000";
+
 
                         // check if the new client name exist already
                         for (i = 0; i < clientsList.size(); i++) {
@@ -228,26 +228,23 @@ public class Server {
                             }
                             writeJsonDatabase();
                             System.out.println("Client information updated in JSON database: " + pathClientJSON);
-                            message = "UPDATE-CONFIRMED* - RQ#: *" + messages[1] + "*" + clientNew + "*" + messages[3];
+                            message = "UPDATE-CONFIRMED* - RQ#: *" + messages[1] + "* " + clientNew + "*" + messages[3];
                             System.out.println("MESSAGE TO CLIENT: UPDATE-CONFIRMED - RQ#: " + messages[1] + clientNew);
                             System.out.println("UPDATE-CONTACT Successful");
-                            ip = clientNew.getClientIP(); port = clientNew.getClientPortUDP();
                         }
                         else if (!containsOldClient) {
                             // client is not registered
                             message = "UPDATE-DENIED* - RQ#: *" + messages[1] + "*" + clientNew.getClientName() + "* REASON: client is not registered*" + messages[2];
                             System.out.println("MESSAGE TO CLIENT: UPDATE-DENIED - RQ#: " + messages[1] + clientNew);
                             System.out.println("UPDATE-DENIED: Client not registered");
-                            ip = clientOld.getClientIP(); port = clientOld.getClientPortUDP();
                         }
                         else if (containsNewClient) {
                             // can't change to this name as it in use
                             message = "UPDATE-DENIED* - RQ#: *" + messages[1] + "*" + clientNew.getClientName() + "* REASON: new client name is in use*" + messages[2];
                             System.out.println("MESSAGE TO CLIENT: UPDATE-DENIED - RQ#: " + messages[1] + clientNew);
                             System.out.println("UPDATE-DENIED: New name is in use");
-                            ip = clientOld.getClientIP(); port = clientOld.getClientPortUDP();
                         }
-                        messageToClient(message, ip, port);
+                        messageToClient(message, clientOld.getClientIP(), clientOld.getClientPortUDP());
                         break;
                     default:
                 }

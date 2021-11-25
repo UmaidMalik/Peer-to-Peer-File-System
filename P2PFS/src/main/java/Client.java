@@ -35,11 +35,11 @@ public class Client {
         }
     }
 
-    private static DatagramSocket datagramSocket;
+    //private static DatagramSocket datagramSocket;
     private static DatagramSocket datagramClientSocket;
-    private static DatagramPacket dPacketSend;
+    //private static DatagramPacket dPacketSend;
     private static int clientSocketPort = 1000;
-    private static Client staticClient;
+    private static Client staticClient = new Client();
 
     private String clientName;
     private InetAddress clientIP;
@@ -104,135 +104,7 @@ public class Client {
             System.out.println("Parsed client data. " + client.info());
         }
 
-
-        /*
-        Scanner scannerInput = new Scanner(System.in);
-        Scanner scannerFileInput = new Scanner(System.in);
-
-
-        //make static
-
-        datagramSocket = new DatagramSocket();
-        datagramClientSocket = new DatagramSocket(null);
-        datagramClientSocket.setReuseAddress(true);
-        datagramClientSocket.bind(new InetSocketAddress(client.getClientIP(), clientSocketPort));
-
-        ClientReceiveRun clientReceiveRun = new ClientReceiveRun();
-        Thread clientReceiveThread;
-
-        DatagramClientSocketRun datagramClientSocketRun;
-        Thread datagramClientSocketThread;
-
-        datagramClientSocketRun = new DatagramClientSocketRun(client.getClientIP(), client.clientPortUDP);
-        datagramClientSocketThread = new Thread(datagramClientSocketRun);
-        datagramClientSocketThread.start();
-        */
-
         client.startClient();
-
-/*
-        System.out.println("Running...");
-        while(true){
-
-
-
-            String input = scannerInput.nextLine();
-            input = input.toUpperCase();
-            switch(input) {
-                case "1":
-                    client.changeClientInfo(datagramClientSocketRun, datagramClientSocketThread);
-                    break;
-                case "SIGNIN":
-                case "SIGN-IN":
-                case "LOGIN":
-                    break;
-                case "REGISTER":
-                    Gson gson = new Gson();
-                    String jsonString = gson.toJson(client);
-                    String message = "REGISTER" + "*" + Client.RQ + "*" + jsonString + "\n";
-                    System.out.println("MESSAGE TO SERVER: " + "REGISTER" + " " + Client.RQ + " " + jsonString);
-
-                    messageToServer(message);
-                    System.out.println("RQ# " + Client.RQ + " REGISTER Command sent to server");
-                    Client.RQ++;
-                    break;
-                case "DEREGISTER":
-                case "DE-REGISTER":
-                    message = "DE-REGISTER" + "*" + Client.RQ + "*" + client.getClientName();
-                    System.out.println("MESSAGE TO SERVER: " + "DE-REGISTER" + " " + Client.RQ + " " + client.getClientName());
-
-                    messageToServer(message);
-                    System.out.println("DE-REGISTER Command sent to server");
-                    Client.RQ++;
-                    break;
-                case "PUBLISH":
-                    System.out.println("\nSpecify file(s) to be published. Separate with space(s). " +
-                            "Surround with quotations to encompass files containing spaces.");
-                    String inputFile = scannerFileInput.nextLine();
-                    String clientString;
-
-                    ArrayList<String> fileList = removeQuotes(inputFile);
-                    clientFiles = new ClientFiles(client.getClientName(), fileList);
-
-                    gson = new Gson();
-                    jsonString = gson.toJson(clientFiles);
-                    clientString = gson.toJson(client);
-                    message = "PUBLISH" + "*" + Client.RQ + "*" + jsonString + "*" + clientString;
-                    System.out.println("MESSAGE TO SERVER: " + "PUBLISH" + " " + Client.RQ + " " + jsonString);
-
-                    messageToServer(message);
-                    System.out.println("RQ# " + Client.RQ + " PUBLISH Command sent to server");
-                    Client.RQ++;
-                    break;
-                case "REMOVE":
-                    System.out.println("\nSpecify file(s) to be removed. Separate with space(s). " +
-                            "Surround with quotations to encompass files containing spaces.");
-                    inputFile = scannerFileInput.nextLine();
-                    fileList = removeQuotes(inputFile);
-                    clientFiles = new ClientFiles(client.getClientName(), fileList);
-
-                    gson = new Gson();
-                    jsonString = gson.toJson(clientFiles);
-                    clientString = gson.toJson(client);
-                    message = "REMOVE" + "*" + Client.RQ + "*" + jsonString + "*" + clientString;
-                    System.out.println("MESSAGE TO SERVER: " + "REMOVE" + " " + Client.RQ + " " + jsonString);
-
-                    messageToServer(message);
-                    System.out.println("RQ# " + Client.RQ + " PUBLISH Command sent to server");
-                    Client.RQ++;
-                    break;
-                case "RETRIEVE-ALL":
-                    System.out.println("RETRIEVE-ALL Command sent to server");
-                    Client.RQ++;
-                    break;
-                case "RETRIEVEINFOT":
-                case "RETRIEVE-INFOT":
-                    System.out.println("RETRIEVE-INFOT Command sent to server");
-                    Client.RQ++;
-                    break;
-                case "SEARCHFILE":
-                case "SEARCH-FILE":
-                    break;
-                case "UPDATECONTACT":
-                case "UPDATE-CONTACT":
-                    Client newClient = new Client();
-                    newClient.changeClientInfo(datagramClientSocketRun, datagramClientSocketThread);
-                    gson = new Gson();
-                    jsonString = gson.toJson(client);
-                    String jsonNewClient = gson.toJson(newClient);
-                    message = "UPDATE-CONTACT" + "*" + Client.RQ + "*" + jsonString + "*" + jsonNewClient + "\n";
-                    System.out.println("MESSAGE TO SERVER: " + "UPDATE-CONTACT" + " " + Client.RQ + " " + jsonNewClient);
-
-                    messageToServer(message);
-                    System.out.println("UPDATE-CONTACT Command sent to server");
-                    Client.RQ++;
-                    break;
-                default:
-            }
-            clientReceiveThread = new Thread(clientReceiveRun);
-            clientReceiveThread.start();
-        }
-        */
 
 
     }
@@ -243,7 +115,7 @@ public class Client {
         Scanner scannerInput = new Scanner(System.in);
         Scanner scannerFileInput = new Scanner(System.in);
 
-        datagramSocket = new DatagramSocket();
+
         datagramClientSocket = new DatagramSocket(null);
         datagramClientSocket.setReuseAddress(true);
         datagramClientSocket.bind(new InetSocketAddress(this.clientIP, clientSocketPort));
@@ -260,6 +132,8 @@ public class Client {
 
         System.out.println("\nDEBUG: Enter 1 to recreate client data. FOR DEBUGGING PURPOSES ONLY" +
                 "\nUNEXPECTED BEHAVIOUR WILL RESULT IF USED IMPROPERLY");
+        System.out.println("Enter 2 to print available commands");
+        System.out.println("Enter 3 to print to display client info\n");
         System.out.println("Running client...");
         while(true){
 
@@ -270,6 +144,14 @@ public class Client {
                 case "1":
                     changeClientInfo();
                     rebindDatagramPort(datagramClientSocketRun, datagramClientSocketThread);
+                    break;
+                case "2":
+                    System.out.println("LOGIN - REGISTER - DE-REGISTER - PUBLISH - REMOVE - RETRIEVE-ALL - RETRIEVE-INFOT - SEARCH-FILE - UPDATE-CONTACT");
+                    // list commands
+                    break;
+                case "3":
+                    System.out.println(info());
+                    // print info
                     break;
                 case "SIGNIN":
                 case "SIGN-IN":
@@ -342,13 +224,14 @@ public class Client {
                     break;
                 case "UPDATECONTACT":
                 case "UPDATE-CONTACT":
-                    Client newClient = new Client();
-                    newClient.changeClientInfo();
+
                     gson = new Gson();
                     jsonString = gson.toJson(this);
-                    String jsonNewClient = gson.toJson(newClient);
-                    message = "UPDATE-CONTACT" + "*" + Client.RQ + "*" + jsonString + "*" + jsonNewClient + "\n";
-                    System.out.println("MESSAGE TO SERVER: " + "UPDATE-CONTACT" + " " + Client.RQ + " " + jsonNewClient);
+                    changeClientInfo();
+                    gson = new Gson();
+                    String jsonNewClient = gson.toJson(this);
+                    message = "UPDATE-CONTACT" + "*" + Client.RQ + "*" + jsonString + "*" + jsonNewClient;
+                    System.out.println("MESSAGE TO SERVER: " + "UPDATE-CONTACT" + " " + Client.RQ + " " +jsonString + "\n" + jsonNewClient);
 
                     messageToServer(message);
                     System.out.println("UPDATE-CONTACT Command sent to server");
@@ -356,6 +239,21 @@ public class Client {
                     break;
                 default:
             }
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while (!staticClient.clientName.isBlank()) {
+                        clientName = staticClient.getClientName();
+                        clientIP = staticClient.getClientIP();
+                        clientPortUDP = staticClient.getClientPortUDP();
+                        clientPortTCP = staticClient.getClientPortTCP();
+                        rebindDatagramPort(datagramClientSocketRun, datagramClientSocketThread);
+                        staticClient = new Client();
+                    }
+                }
+            }).start();
+
+
             clientReceiveThread = new Thread(clientReceiveRun);
             clientReceiveThread.start();
         }
@@ -423,8 +321,11 @@ public class Client {
                     } else if (messageFromServer.startsWith("UPDATE-CONFIRMED")) {
                         message = messageFromServer.split("\\*");
                         gson = new Gson();
+                        System.out.println("MESSAGE FROM SERVER: " + message.toString());
+                        staticClient =  gson.fromJson(message[4], Client.class);
 
-                        Client client =  gson.fromJson(message[4], Client.class);
+
+
 
                     } else if (messageFromServer.startsWith("UPDATE-DENIED")) {
 
@@ -589,7 +490,7 @@ public class Client {
                 !validateIPv4(inputsList.get(1)) ||
                 !validatePortNumber(inputsList.get(2)) ||
                 !validatePortNumber(inputsList.get(3))) {
-            System.out.println("\nInvalid inputs submitted. You can press 1 again to recreate client data.");
+            System.out.println("\nInvalid inputs submitted. You can try again to recreate client data.");
         } else {
             clientName = inputsList.get(0);
             clientIP = InetAddress.getByName(inputsList.get(1));
@@ -603,7 +504,7 @@ public class Client {
     public void  rebindDatagramPort(DatagramClientSocketRun datagramClientSocketRun,
                                     Thread datagramClientSocketThread) {
         // Rebind datagram port
-        datagramClientSocketRun = new DatagramClientSocketRun(getClientIP(), clientPortUDP);
+        datagramClientSocketRun = new DatagramClientSocketRun(clientIP, clientPortUDP);
         datagramClientSocketThread = new Thread(datagramClientSocketRun);
         datagramClientSocketThread.start();
     }
