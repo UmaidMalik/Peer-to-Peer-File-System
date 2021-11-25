@@ -111,6 +111,7 @@ public class Client {
 
     private void startClient() throws IOException {
         String jsonString;
+        String message;
         Gson gson;
         Scanner scannerInput = new Scanner(System.in);
         Scanner scannerFileInput = new Scanner(System.in);
@@ -135,6 +136,29 @@ public class Client {
         System.out.println("Enter 2 to print available commands");
         System.out.println("Enter 3 to print to display client info\n");
         System.out.println("Running client...");
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    while (!staticClient.clientName.isBlank()) {
+                        clientName = staticClient.getClientName();
+                        clientIP = staticClient.getClientIP();
+                        clientPortUDP = staticClient.getClientPortUDP();
+                        clientPortTCP = staticClient.getClientPortTCP();
+                        rebindDatagramPort(datagramClientSocketRun, datagramClientSocketThread);
+                        staticClient = new Client();
+                    }
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }
+        }).start();
+
         while(true){
 
             String input = scannerInput.nextLine();
@@ -146,21 +170,33 @@ public class Client {
                     rebindDatagramPort(datagramClientSocketRun, datagramClientSocketThread);
                     break;
                 case "2":
-                    System.out.println("LOGIN - REGISTER - DE-REGISTER - PUBLISH - REMOVE - RETRIEVE-ALL - RETRIEVE-INFOT - SEARCH-FILE - UPDATE-CONTACT");
                     // list commands
+                    System.out.println("LOGIN - REGISTER - DE-REGISTER - PUBLISH - REMOVE - RETRIEVE-ALL - RETRIEVE-INFOT - SEARCH-FILE - UPDATE-CONTACT");
                     break;
                 case "3":
-                    System.out.println(info());
                     // print info
+                    System.out.println(info());
                     break;
                 case "SIGNIN":
                 case "SIGN-IN":
                 case "LOGIN":
+                    System.out.println("\nEnter client name to login as");
+                    String inputLogin = scannerInput.nextLine();
+                    ArrayList<String> inputLogicArray = removeQuotes(inputLogin);
+                    inputLogin = inputLogicArray.get(0);
+                    gson = new Gson();
+                    jsonString = gson.toJson(this);
+                    message = "LOGIN" + "*" + Client.RQ + "*" + inputLogin + "*" + jsonString;
+                    System.out.println("MESSAGE TO SERVER: " + "LOGIN" + " " + Client.RQ + " " + inputLogin);
+
+                    messageToServer(message);
+                    System.out.println("RQ# " + Client.RQ + " LOGIN Command sent to server");
+                    Client.RQ++;
                     break;
                 case "REGISTER":
                     gson = new Gson();
                     jsonString = gson.toJson(this);
-                    String message = "REGISTER" + "*" + Client.RQ + "*" + jsonString + "\n";
+                    message = "REGISTER" + "*" + Client.RQ + "*" + jsonString;
                     System.out.println("MESSAGE TO SERVER: " + "REGISTER" + " " + Client.RQ + " " + this);
 
                     messageToServer(message);
@@ -231,7 +267,7 @@ public class Client {
                     gson = new Gson();
                     String jsonNewClient = gson.toJson(this);
                     message = "UPDATE-CONTACT" + "*" + Client.RQ + "*" + jsonString + "*" + jsonNewClient;
-                    System.out.println("MESSAGE TO SERVER: " + "UPDATE-CONTACT" + " " + Client.RQ + " " +jsonString + "\n" + jsonNewClient);
+                    System.out.println("MESSAGE TO SERVER: " + "UPDATE-CONTACT" + " " + Client.RQ + " " + this);
 
                     messageToServer(message);
                     System.out.println("UPDATE-CONTACT Command sent to server");
@@ -239,19 +275,7 @@ public class Client {
                     break;
                 default:
             }
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (!staticClient.clientName.isBlank()) {
-                        clientName = staticClient.getClientName();
-                        clientIP = staticClient.getClientIP();
-                        clientPortUDP = staticClient.getClientPortUDP();
-                        clientPortTCP = staticClient.getClientPortTCP();
-                        rebindDatagramPort(datagramClientSocketRun, datagramClientSocketThread);
-                        staticClient = new Client();
-                    }
-                }
-            }).start();
+
 
 
             clientReceiveThread = new Thread(clientReceiveRun);
@@ -318,17 +342,17 @@ public class Client {
                         message = messageFromServer.split("\\*");
                         System.out.println("MESSAGE FROM SERVER: " + message[1]);
 
-                    } else if (messageFromServer.startsWith("UPDATE-CONFIRMED")) {
+                    } else if (messageFromServer.startsWith("UPDATE-CONFIRMED") || messageFromServer.startsWith("LOGGED-IN")) {
                         message = messageFromServer.split("\\*");
                         gson = new Gson();
-                        System.out.println("MESSAGE FROM SERVER: " + message.toString());
+                        System.out.println("MESSAGE FROM SERVER: " + message[0] + message[1] + message[2] + " " + message[3]);
                         staticClient =  gson.fromJson(message[4], Client.class);
 
-
-
-
                     } else if (messageFromServer.startsWith("UPDATE-DENIED")) {
-
+                        message = messageFromServer.split("\\*");
+                        gson = new Gson();
+                        System.out.println("MESSAGE FROM SERVER: " + message[0] + message[1] + message[2] + " " + message[3] + message[4]);
+                        staticClient = gson.fromJson(message[5], Client.class);;
                     }
             }
         }

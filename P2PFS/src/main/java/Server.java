@@ -54,22 +54,57 @@ public class Server {
                 String receivedMessage = ret.toString();
                 String[] messages = receivedMessage.split("\\*");
                 Gson gson;
+                String toJson;
                 String message = "";
+                Client client;
+                boolean containsClient = false;
+                int index = 0;
                 switch (messages[0]) {
                     case "LOGIN":
+                        gson = new Gson();
+                        Client registeredClient = new Client();
+                        client = gson.fromJson(messages[3], Client.class);
+                        // messages[1] -> RQ#, messages[2] -> inputLogin, messages[3] -> client object;
+                        containsClient = false;
+                        for (i = 0; i < clientsList.size(); i++) {
+                            if (clientsList.get(i).getClientName().equals(messages[2])) {
+                                containsClient = true;
+                                registeredClient = clientsList.get(i);
+                                index = i;
+                            }
+                        }
+                        System.out.println("\nRQ#: " + messages[1]);
+                        System.out.println("RECEIVED REQUEST: " + messages[0] + " " + client.info() + "\n");
+
+                        if (client.getClientName().equals(messages[2]) && containsClient) {
+                            System.out.println("CLIENT: " + client.getClientName() + " ALREADY LOGGED-IN");
+                            message = "*ALREADY LOGGED-IN - RQ#: " + messages[1] + " CLIENT " + messages[2];
+                        }
+                        else if (containsClient) {
+                            clientsList.get(index).setClientIP(client.getClientIP());
+                            writeJsonDatabase();
+                            toJson = gson.toJson(registeredClient);
+                            System.out.println("CLIENT: " + client.getClientName() + " LOGGED IN");
+                            message = "LOGGED-IN* - RQ#: *" + messages[1] + "*" + registeredClient.getClientName() + "*" + toJson;
+                        } else {
+                            System.out.println("CLIENT: " + client.getClientName() + " LOGIN DENIED");
+                            System.out.println("Client not found");
+                            message = "*LOGIN-DENIED - RQ#: " + messages[1] + " REASON: CLIENT " + messages[2] + " NOT FOUND";
+                        }
+                        messageToClient(message, client.getClientIP(), client.getClientPortUDP());
                         break;
                     case "REGISTER":
                         gson = new Gson();
-                        Client client = gson.fromJson(messages[2], Client.class);
+                        client = gson.fromJson(messages[2], Client.class);
 
-                        boolean containsClient = false;
+                        containsClient = false;
                         for (i = 0; i < clientsList.size(); i++) {
                             if (client.getClientName().equals(clientsList.get(i).getClientName())) {
                                 containsClient = true;
                             }
                         }
                         System.out.println("\nRQ#: " + messages[1]);
-                        System.out.println("RECEIVED REQUEST: " + messages[0] + client.info() + "\n");
+                        System.out.println("RECEIVED REQUEST: " + messages[0] + " " + client.info() + "\n");
 
                         if (!containsClient) {
                             clientsList.add(client);
@@ -109,7 +144,7 @@ public class Server {
                         // No further action is taken by the server if the client was already not registered
                         break;
                     case "PUBLISH":
-                        int index = 0;
+                        index = 0;
                         gson = new Gson();
                         client = gson.fromJson(messages[2], Client.class);
                         ArrayList<String> filesList = new ArrayList<String>();
@@ -136,16 +171,16 @@ public class Server {
                                 }
                             }
                             writeJsonDatabase();
-                            System.out.println("Client files added to JSON database: " + pathClientJSON);
+                            System.out.println("\nClient files added to JSON database: " + pathClientJSON);
                             message = "*PUBLISHED - RQ#: " + messages[1] + "\n";
                             System.out.println("MESSAGE TO CLIENT: PUBLISHED - RQ#: " + messages[1]);
-                            System.out.println("PUBLISH Successful");
+                            System.out.println("PUBLISH Successful\n");
                         } else {
                             message = "*PUBLISH-DENIED - RQ#: " + messages[1] + " - REASON: Client name '"
                                     + client.getClientName() + "' does not exist" + "\n";
                             System.out.println("MESSAGE TO CLIENT: PUBLISH-DENIED - RQ#: " + messages[1]
                                     + "REASON: Client name '" + client.getClientName() + "' does not exist");
-                            System.out.println("PUBLISH DENIED: Client not registered");
+                            System.out.println("PUBLISH DENIED: Client not registered\n");
                         }
 
                         messageToClient(message, client.getClientIP(), client.getClientPortUDP());
@@ -216,7 +251,7 @@ public class Server {
                                 containsOldClient = true;
                             }
                         }
-                        if (!containsNewClient && containsOldClient) {
+                        if ((!containsNewClient || (clientOld.getClientName().equals(clientNew.getClientName()))) && containsOldClient) {
                             for (i = 0; i < clientsList.size(); i++) {
                                 if (clientOld.getClientName().equals(clientsList.get(i).getClientName())) {
                                     clientsList.get(i).setClientName(clientNew.getClientName());
@@ -229,19 +264,19 @@ public class Server {
                             writeJsonDatabase();
                             System.out.println("Client information updated in JSON database: " + pathClientJSON);
                             message = "UPDATE-CONFIRMED* - RQ#: *" + messages[1] + "* " + clientNew + "*" + messages[3];
-                            System.out.println("MESSAGE TO CLIENT: UPDATE-CONFIRMED - RQ#: " + messages[1] + clientNew);
+                            System.out.println("MESSAGE TO CLIENT: UPDATE-CONFIRMED - RQ#: " + messages[1] + " " + clientNew);
                             System.out.println("UPDATE-CONTACT Successful");
                         }
                         else if (!containsOldClient) {
                             // client is not registered
-                            message = "UPDATE-DENIED* - RQ#: *" + messages[1] + "*" + clientNew.getClientName() + "* REASON: client is not registered*" + messages[2];
-                            System.out.println("MESSAGE TO CLIENT: UPDATE-DENIED - RQ#: " + messages[1] + clientNew);
+                            message = "UPDATE-DENIED* - RQ#: *" + messages[1] + "*" + clientOld.getClientName() + "* REASON: client is not registered*" + messages[2];
+                            System.out.println("MESSAGE TO CLIENT: UPDATE-DENIED - RQ#: " + messages[1] + " " + clientOld);
                             System.out.println("UPDATE-DENIED: Client not registered");
                         }
                         else if (containsNewClient) {
                             // can't change to this name as it in use
                             message = "UPDATE-DENIED* - RQ#: *" + messages[1] + "*" + clientNew.getClientName() + "* REASON: new client name is in use*" + messages[2];
-                            System.out.println("MESSAGE TO CLIENT: UPDATE-DENIED - RQ#: " + messages[1] + clientNew);
+                            System.out.println("MESSAGE TO CLIENT: UPDATE-DENIED - RQ#: " + messages[1] + " " + clientNew);
                             System.out.println("UPDATE-DENIED: New name is in use");
                         }
                         messageToClient(message, clientOld.getClientIP(), clientOld.getClientPortUDP());
