@@ -12,6 +12,7 @@ import org.json.simple.parser.ParseException;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Scanner;
 
 
@@ -53,10 +54,11 @@ public class Server {
 
                 String receivedMessage = ret.toString();
                 String[] messages = receivedMessage.split("\\*");
+                StringBuilder stringBuilder = new StringBuilder();
                 Gson gson;
                 String toJson;
                 String message = "";
-                Client client;
+                Client client = new Client();
                 boolean containsClient = false;
                 int index = 0;
                 switch (messages[0]) {
@@ -226,10 +228,124 @@ public class Server {
                         messageToClient(message, client.getClientIP(), client.getClientPortUDP());
                         break;
                     case "RETRIEVE-ALL":
+                        // messages[1] -> RQ#, messages[2] -> registeredClientName
+                        containsClient = false;
+                        for (i = 0; i < clientsList.size(); i++) {
+                            if (messages[2].equals(clientsList.get(i).getClientName())) {
+                                containsClient = true;
+                                client = clientsList.get(i);
+                                System.out.println("Client: " + client.getClientName() + " FOUND");
+                            }
+                        }
+
+                        if (containsClient) {
+                            System.out.println("SENDING LIST OF REGISTERED CLIENTS TO REQUESTING CLIENT");
+                            stringBuilder.append("*\n");
+                            for (i = 0; i < clientsList.size(); i++) {
+                                stringBuilder.append(
+                                        "\nCLIENT NAME: " + clientsList.get(i).getClientName() +
+                                                "\nCLIENT IP: " + clientsList.get(i).getClientIP().getHostAddress() +
+                                                "\nCLIENT TCP SOCKET#: " + clientsList.get(i).getClientPortTCP() +
+                                                "\nLIST OF FILE(S): ");
+                                if (!clientsList.get(i).getListOfFiles().isEmpty()) {
+                                    for (int j = 0; j < clientsList.get(i).getListOfFiles().size(); j++) {
+                                        stringBuilder.append("\n'" + clientsList.get(i).getListOfFiles().get(j) + "'");
+                                    }
+                                }
+                                stringBuilder.append("\n");
+                            }
+                            message = stringBuilder.toString();
+                            messageToClient(message, client.getClientIP(), client.getClientPortUDP());
+                            System.out.println("LIST OF REGISTERED CLIENT SENT");
+                        }
                         break;
-                    case "RETRIVE-INFOT":
+                    case "RETRIEVE-INFOT":
+                        // messages[1] -> RQ#, messages[2] -> specific peer, messages[3] -> registeredClientName
+                        boolean containsPeer = false;
+                        containsClient = false;
+                        stringBuilder = new StringBuilder();
+                        Client clientPeer = new Client();
+
+                        for (i = 0; i < clientsList.size(); i++) {
+                            if (messages[3].equals(clientsList.get(i).getClientName())) {
+                                containsClient = true;
+                                client = clientsList.get(i);
+                                System.out.println("Client: " + client.getClientName() + " FOUND");
+                            }
+                        }
+                        for (i = 0; i < clientsList.size(); i++) {
+                            if (messages[2].equals(clientsList.get(i).getClientName())) {
+                                containsPeer = true;
+                                clientPeer = clientsList.get(i);
+                                System.out.println("Specific peer: " + messages[2] + " FOUND");
+                            }
+                        }
+
+                       stringBuilder.append("*");
+                        if (containsClient && containsPeer) {
+                            stringBuilder.append("\n\nCLIENT NAME: " + clientPeer.getClientName() +
+                                    "\nCLIENT IP: " + clientPeer.getClientIP().getHostAddress() +
+                                    "\nCLIENT TCP SOCKET#: " + clientPeer.getClientPortTCP() +
+                                    "\nLIST OF FILE(S): ");
+                            System.out.println("SENDING CLIENT DATA TO REQUESTING CLIENT");
+                            for (i = 0; i < clientPeer.getListOfFiles().size(); i++) {
+                                stringBuilder.append("\n'" + clientPeer.getListOfFiles().get(i) + "'");
+                            }
+                            stringBuilder.append("\n");
+                            System.out.println("CLIENT DATA TO REQUESTING CLIENT SENT");
+                        } else if (containsClient && !containsPeer) {
+                            stringBuilder.append("RETRIEVE-ERROR - RQ#: " + messages[1] + " - REASON: Requested name " + messages[2] + " does not exist");
+                        }
+
+                        if (containsClient) {
+                            message = stringBuilder.toString();
+                            messageToClient(message, client.getClientIP(), client.getClientPortUDP());
+                        }
                         break;
                     case "SEARCH-FILE":
+                        // messages[1] -> RQ#, messages[2] -> file name, messages[3] -> registeredClientName
+                        containsClient = false;
+                        boolean containsFile = false;
+                        stringBuilder = new StringBuilder();
+                        for (i = 0; i < clientsList.size(); i++) {
+                            if (messages[3].equals(clientsList.get(i).getClientName())) {
+                                containsClient = true;
+                                client = clientsList.get(i);
+                                System.out.println("Client: " + client.getClientName() + " FOUND");
+                            }
+                        }
+                        if (containsClient) {
+                            StringBuilder tempBuild = new StringBuilder();
+                            for (i = 0; i < clientsList.size(); i++) {
+                                if (clientsList.get(i).getListOfFiles().contains(messages[2])) {
+                                    tempBuild.append("\n\nCLIENT NAME: " + clientsList.get(i).getClientName() +
+                                    "\nCLIENT IP: " + clientsList.get(i).getClientIP().getHostAddress() +
+                                            "\nCLIENT TCP SOCKET#: " + clientsList.get(i).getClientPortTCP() + "\n");
+                                    System.out.println("CLIENT: " + clientsList.get(i).getClientName() +
+                                            " has the file '" + messages[2] + "'");
+                                    containsFile = true;
+                                }
+                            }
+                            if (containsFile) {
+                                System.out.println("contains file:" + containsFile);
+                                stringBuilder.append("*SEARCH-FILE - RQ: " + messages[1] + " FILE NAME: '" + messages[2]);
+                                stringBuilder.append(tempBuild.toString());
+
+                                System.out.println(stringBuilder);
+                                System.out.println("SEARCH-FILE response to client " + messages[3] + " sent");
+
+                            } else if (!containsFile) {
+                                stringBuilder.append("*SEARCH-ERROR - RQ: " + messages[1] + " FILE NAME: '" + messages[2] + "' NOT FOUND\n");
+                                System.out.println("SEARCH-ERROR response to client " + messages[3] + " sent");
+                            }
+
+                                message = stringBuilder.toString();
+                                messageToClient(message, client.getClientIP(), client.getClientPortUDP());
+
+                        }
+
+
+
                         break;
                     case "UPDATE-CONTACT":
                         gson = new Gson();

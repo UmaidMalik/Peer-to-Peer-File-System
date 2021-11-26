@@ -182,8 +182,8 @@ public class Client {
                 case "LOGIN":
                     System.out.println("\nEnter client name to login as");
                     String inputLogin = scannerInput.nextLine();
-                    ArrayList<String> inputLogicArray = removeQuotes(inputLogin);
-                    inputLogin = inputLogicArray.get(0);
+                    ArrayList<String> inputLoginArray = removeQuotes(inputLogin);
+                    inputLogin = inputLoginArray.get(0);
                     gson = new Gson();
                     jsonString = gson.toJson(this);
                     message = "LOGIN" + "*" + Client.RQ + "*" + inputLogin + "*" + jsonString;
@@ -246,17 +246,41 @@ public class Client {
                     System.out.println("RQ# " + Client.RQ + " PUBLISH Command sent to server");
                     Client.RQ++;
                     break;
+                case "RETRIEVEALL":
                 case "RETRIEVE-ALL":
+                    message = "RETRIEVE-ALL" + "*" + Client.RQ + "*" + clientName;
+                    System.out.println("MESSAGE TO SERVER: " + "RETRIEVE-ALL" + " " + Client.RQ);
+
+                    messageToServer(message);
                     System.out.println("RETRIEVE-ALL Command sent to server");
                     Client.RQ++;
                     break;
                 case "RETRIEVEINFOT":
                 case "RETRIEVE-INFOT":
+                    String inputName;
+                    System.out.println("Enter name of peer to request information from");
+                    inputName = scannerInput.nextLine();
+                    ArrayList<String> inputArray = removeQuotes(inputName);
+                    inputName = inputArray.get(0);
+                    message = "RETRIEVE-INFOT" + "*" + Client.RQ + "*" + inputName + "*" + clientName;
+                    System.out.println("MESSAGE TO SERVER: " + "RETRIEVE-INFOT" + " " + Client.RQ + " " + inputName);
+
+                    messageToServer(message);
                     System.out.println("RETRIEVE-INFOT Command sent to server");
                     Client.RQ++;
                     break;
                 case "SEARCHFILE":
                 case "SEARCH-FILE":
+                    System.out.println("Enter the name of file to search");
+                    inputFile = scannerFileInput.nextLine();
+                    inputArray = removeQuotes(inputFile);
+                    inputFile = inputArray.get(0);
+                    message = "SEARCH-FILE" + "*" + Client.RQ + "*" + inputFile + "*" + clientName;
+                    System.out.println("MESSAGE TO SERVER: " + "SEARCH-FILE" + " " + Client.RQ + " " + inputFile);
+
+                    messageToServer(message);
+                    System.out.println("SEARCH-FILE Command sent to server");
+                    Client.RQ++;
                     break;
                 case "UPDATECONTACT":
                 case "UPDATE-CONTACT":
@@ -270,7 +294,7 @@ public class Client {
                     System.out.println("MESSAGE TO SERVER: " + "UPDATE-CONTACT" + " " + Client.RQ + " " + this);
 
                     messageToServer(message);
-                    System.out.println("UPDATE-CONTACT Command sent to server");
+                    System.out.println("UPDATE-CONTACT Command sent to server\n");
                     Client.RQ++;
                     break;
                 default:
@@ -312,7 +336,7 @@ public class Client {
         public void run() {
 
                 while (!datagramClientSocket.isClosed()) {
-                    byte buffer[] = new byte[256];
+                    byte buffer[] = new byte[1048576];
 
                     // FOR DEBUG
                     //System.out.println("BOUND DATAGRAM PORT: " + datagramClientSocket.getLocalPort());

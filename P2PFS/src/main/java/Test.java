@@ -17,7 +17,7 @@ public class Test {
 
         byte[] fileContent = Files.readAllBytes(Paths.get("src/main/resources/Client.json"));
         ArrayList<byte[]> bytesList = new ArrayList<byte[]>();
-        int limit = 200;
+        int limit = 100;
         byte[] byter = new byte[limit];
        System.out.println("fileContent.length: " + fileContent.length + " bytes or " + (fileContent.length / 1000.0f) + " kilobytes\n");
 
