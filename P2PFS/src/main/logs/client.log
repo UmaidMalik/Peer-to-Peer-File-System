@@ -63,3 +63,149 @@ TCP SOCKET#: 3048
 2021-11-30 01:01:04 -:- MESSAGE FROM SERVER: REGISTER-DENIED - RQ#: 2 - REASON: Name is already in use
 
 2021-11-30 01:02:09 -:- EXIT
+2021-11-30 01:22:20 -:- Generating default client data...
+2021-11-30 01:22:20 -:- Retrieving your IP address...
+2021-11-30 01:22:20 -:- Get host name: 172.26.112.1
+2021-11-30 01:22:20 -:- Generation random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 01:22:20 -:- Client generated.
+
+CLIENT NAME: yardnewswealth
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 4022
+TCP SOCKET#: 4075
+2021-11-30 01:22:20 -:- Running client...
+2021-11-30 01:22:38 -:- Generating default client data...
+2021-11-30 01:22:38 -:- Retrieving your IP address...
+2021-11-30 01:22:38 -:- Get host name: 172.26.112.1
+2021-11-30 01:22:38 -:- Generation random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 01:22:38 -:- Client generated.
+
+CLIENT NAME: shirthairlaw
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 4246
+TCP SOCKET#: 7814
+2021-11-30 01:22:38 -:- Running client...
+2021-11-30 01:25:17 -:- Generating default client data...
+2021-11-30 01:25:17 -:- Retrieving your IP address...
+2021-11-30 01:25:17 -:- Get host name: 172.26.112.1
+2021-11-30 01:25:17 -:- Generating random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 01:25:17 -:- Client generated.
+
+CLIENT NAME: hallrestaurantlaw
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 8199
+TCP SOCKET#: 4197
+2021-11-30 01:25:17 -:- Running client...
+2021-11-30 01:25:51 -:- 2
+2021-11-30 01:33:57 -:- Generating default client data...
+2021-11-30 01:33:57 -:- Retrieving your IP address...
+2021-11-30 01:33:57 -:- Get host name: 172.26.112.1
+2021-11-30 01:33:57 -:- Generating random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 01:33:57 -:- Client generated.
+
+CLIENT NAME: tonguearchhair
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 3071
+TCP SOCKET#: 6590
+2021-11-30 01:33:58 -:- Running client...
+2021-11-30 01:34:05 -:- 3
+2021-11-30 01:34:43 -:- Generating default client data...
+2021-11-30 01:34:43 -:- Retrieving your IP address...
+2021-11-30 01:34:43 -:- Get host name: 172.26.112.1
+2021-11-30 01:34:43 -:- Generating random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 01:34:43 -:- Client generated.
+
+CLIENT NAME: ballpenaltymood
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 4729
+TCP SOCKET#: 7345
+2021-11-30 01:34:43 -:- Running client...
+2021-11-30 01:34:46 -:- 3
+2021-11-30 01:36:09 -:- Generating default client data...
+2021-11-30 01:36:09 -:- Retrieving your IP address...
+2021-11-30 01:36:09 -:- Get host name: 172.26.112.1
+2021-11-30 01:36:09 -:- Generating random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 01:36:09 -:- Client generated.
+
+CLIENT NAME: debthousingyard
+CLIENT IP: 127.0.0.1
+UDP SOCKET#: 4358
+TCP SOCKET#: 7188
+2021-11-30 01:36:09 -:- Running client...
+2021-11-30 01:37:14 -:- Generating default client data...
+2021-11-30 01:37:14 -:- Retrieving your IP address...
+2021-11-30 01:37:14 -:- Get host name: 172.26.112.1
+2021-11-30 01:37:14 -:- Generating random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 01:37:14 -:- Client generated.
+
+CLIENT NAME: lackarchbird
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 3913
+TCP SOCKET#: 6500
+2021-11-30 01:37:14 -:- Running client...
+2021-11-30 01:37:16 -:- Generating default client data...
+2021-11-30 01:37:16 -:- Retrieving your IP address...
+2021-11-30 01:37:16 -:- Get host name: 172.26.112.1
+2021-11-30 01:37:16 -:- Generating random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 01:37:16 -:- Client generated.
+
+CLIENT NAME: lackbreathchocolate
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 4248
+TCP SOCKET#: 5318
+2021-11-30 01:37:16 -:- Running client...
+2021-11-30 02:08:57 -:- Generating default client data...
+2021-11-30 02:08:57 -:- Retrieving your IP address...
+2021-11-30 02:08:57 -:- Get host name: 172.26.112.1
+2021-11-30 02:08:57 -:- Generation random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 02:08:57 -:- Client generated.
+
+CLIENT NAME: messagesongear
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 1137
+TCP SOCKET#: 4307
+2021-11-30 02:08:57 -:- Running client...
+2021-11-30 02:08:59 -:- EXIT
+2021-11-30 02:14:56 -:- Generating default client data...
+2021-11-30 02:14:56 -:- Retrieving your IP address...
+2021-11-30 02:14:56 -:- Get host name: 172.26.112.1
+2021-11-30 02:14:56 -:- Generating random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 02:14:56 -:- Client generated.
+
+CLIENT NAME: pianorestaurantking
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 2681
+TCP SOCKET#: 2841
+2021-11-30 02:14:56 -:- Running client...
+2021-11-30 02:15:21 -:- REGISTER
+2021-11-30 02:15:21 -:- MESSAGE TO SERVER: REGISTER 0 pianorestaurantking 172.26.112.1 2681 2841
+2021-11-30 02:15:21 -:- RQ# 0 REGISTER Command sent to server
+2021-11-30 02:16:19 -:- 4
+2021-11-30 02:16:20 -:- 4
+2021-11-30 02:16:22 -:- 3
+2021-11-30 02:16:24 -:- 2
+2021-11-30 02:16:30 -:- 5
+2021-11-30 02:16:31 -:- The IP address format is incorrect: ef contains non-integers
+2021-11-30 02:19:33 -:- EXIT
+2021-11-30 02:47:53 -:- Generating default client data...
+2021-11-30 02:47:53 -:- Retrieving your IP address...
+2021-11-30 02:47:53 -:- Get host name: 172.26.112.1
+2021-11-30 02:47:53 -:- Generating random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 02:47:53 -:- Client generated.
+
+CLIENT NAME: breathfriendshipdebt
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 9852
+TCP SOCKET#: 3562
+2021-11-30 02:47:54 -:- Running client...
+2021-11-30 02:48:47 -:- Generating default client data...
+2021-11-30 02:48:47 -:- Retrieving your IP address...
+2021-11-30 02:48:47 -:- Get host name: 172.26.112.1
+2021-11-30 02:48:47 -:- Generating random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 02:48:47 -:- Client generated.
+
+CLIENT NAME: earshirtworld
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 6250
+TCP SOCKET#: 9685
+2021-11-30 02:48:47 -:- Running client...

@@ -228,13 +228,15 @@ public class Client implements Runnable {
                 case "2":
                     // list commands
                     System.out.println("LOGIN - REGISTER - DE-REGISTER - PUBLISH - REMOVE - " +
-                            "RETRIEVE-ALL - RETRIEVE-INFOT - SEARCH-FILE - UPDATE-CONTACT");
-                    System.out.println("1: Recreate client data - 2: Print commands - 3: Print client - " +
+                            "RETRIEVE-ALL - RETRIEVE-INFOT - SEARCH-FILE - UPDATE-CONTACT - DOWNLOAD");
+                    System.out.println("1: Recreate client data - 2: Print commands - 3: Print client info - " +
                             "4: Toggle verbose file transfer - 5: Reconfigure server IP");
                     break;
                 case "3":
                     // print info
                     System.out.println(info());
+                    System.out.println("Server IP and UDP configuration: "
+                            + serverIP.getHostAddress() + " " + serverPortUDP);
                     break;
                 case "4":
                     toggle = (toggle + 1) % 2;
