@@ -1,0 +1,25 @@
+
+2021-11-30 01:00:20 -:- RQ#: 0
+2021-11-30 01:00:20 -:- RECEIVED REQUEST: LOGIN 
+CLIENT NAME: yardtwopride
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 3718
+TCP SOCKET#: 3048
+
+2021-11-30 01:00:20 -:- CLIENT: yardtwopride LOGGED IN
+2021-11-30 01:00:51 -:- Client: songcousinwealth FOUND
+2021-11-30 01:00:51 -:- File: '24.txt' ADDED
+
+2021-11-30 01:00:51 -:- Client files added to JSON database: src/main/resources/Client.json
+2021-11-30 01:00:51 -:- MESSAGE TO CLIENT: PUBLISHED - RQ#: 1
+2021-11-30 01:00:51 -:- PUBLISH Successful
+
+
+2021-11-30 01:01:04 -:- RQ#: 2
+2021-11-30 01:01:04 -:- RECEIVED REQUEST: REGISTER 
+CLIENT NAME: songcousinwealth
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 4781
+TCP SOCKET#: 1166
+
+2021-11-30 01:01:04 -:- CLIENT NOT REGISTERED: Client name exists already

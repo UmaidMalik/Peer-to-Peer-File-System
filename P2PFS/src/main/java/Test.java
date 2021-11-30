@@ -1,7 +1,6 @@
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import javax.sound.sampled.*;
+import javax.swing.*;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -10,12 +9,12 @@ public class Test {
 
     // FOR TESTING PURPOSES ONLY
 
-    public static void main(String[] arg) throws IOException {
+    public static void main(String[] arg) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
 
 
         System.out.println("Ello Gov'nor\n");
 
-        byte[] fileContent = Files.readAllBytes(Paths.get("src/main/resources/Client.json"));
+        byte[] fileContent = Files.readAllBytes(Paths.get("src/main/files/shock.txt"));
         ArrayList<byte[]> bytesList = new ArrayList<byte[]>();
         int limit = 100;
         byte[] byter = new byte[limit];
@@ -55,6 +54,29 @@ public class Test {
         System.out.println("\nbytesList.size(): " + bytesList.size());
         for (int i = 0; i < bytesList.size(); i++) {
             System.out.println("bytesList.get(" + i + ").length: " +  bytesList.get(i).length + " Data: " + new String(bytesList.get(i)));
+        }
+
+        fileContent[0] = (byte) 85;
+        fileContent[1] = (byte) 109;
+        fileContent[2] = (byte) 97;
+        fileContent[3] = (byte) 105;
+        fileContent[4] = (byte) 100;
+        fileContent[5] = (byte) 77;
+        System.out.println("fileContent: " + new String(fileContent));
+
+        String string = "123 102 77 122 64 200 88 46 99 98 97 96 95 94 93 92 91 90 89 88 87 86 85 84 83 82 81 80 70";
+        String[] stringArray ;
+        stringArray = string.split(" ");
+        String line;
+        System.out.println(stringArray.length);
+        for (int i = 0; i < stringArray.length; i++) {
+            fileContent[i] = (byte) Integer.parseInt(stringArray[i]);
+
+
+        }
+        line = new String(fileContent);
+        for (int i = 0; i < stringArray.length; i++) {
+            System.out.print(line.charAt(i));
         }
 
     }

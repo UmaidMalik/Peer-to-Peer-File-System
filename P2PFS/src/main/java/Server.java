@@ -18,7 +18,15 @@ import java.util.Scanner;
 
 public class Server {
 
+    private static LogWriter logWriter;
 
+    static {
+        try {
+            logWriter = new LogWriter("server.log");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     private static final int datagramSocketPort = 4269;
     private static final String pathClientJSON = "src/main/resources/Client.json";
@@ -62,7 +70,7 @@ public class Server {
                 boolean containsClient = false;
                 int index = 0;
                 switch (messages[0]) {
-                    case "LOGIN":
+                    case "LOGIN": //TODO FIX THIS
                         gson = new Gson();
                         Client registeredClient = new Client();
                         client = gson.fromJson(messages[3], Client.class);
@@ -77,9 +85,12 @@ public class Server {
                         }
                         System.out.println("\nRQ#: " + messages[1]);
                         System.out.println("RECEIVED REQUEST: " + messages[0] + " " + client.info() + "\n");
+                        logWriter.lnlog("RQ#: " + messages[1] + "\n");
+                        logWriter.log("RECEIVED REQUEST: " + messages[0] + " " + client.info() + "\n\n");
 
                         if (client.getClientName().equals(messages[2]) && containsClient) {
                             System.out.println("CLIENT: " + client.getClientName() + " ALREADY LOGGED-IN");
+                            logWriter.log("CLIENT: " + client.getClientName() + " ALREADY LOGGED-IN\n");
                             message = "*ALREADY LOGGED-IN - RQ#: " + messages[1] + " CLIENT " + messages[2];
                         }
                         else if (containsClient) {
@@ -87,10 +98,13 @@ public class Server {
                             writeJsonDatabase();
                             toJson = gson.toJson(registeredClient);
                             System.out.println("CLIENT: " + client.getClientName() + " LOGGED IN");
+                            logWriter.log("CLIENT: " + client.getClientName() + " LOGGED IN\n");
                             message = "LOGGED-IN* - RQ#: *" + messages[1] + "*" + registeredClient.getClientName() + "*" + toJson;
                         } else {
                             System.out.println("CLIENT: " + client.getClientName() + " LOGIN DENIED");
                             System.out.println("Client not found");
+                            logWriter.log("CLIENT: " + client.getClientName() + " LOGIN DENIED\n");
+                            logWriter.log("Client not found\n");
                             message = "*LOGIN-DENIED - RQ#: " + messages[1] + " REASON: CLIENT " + messages[2] + " NOT FOUND";
                         }
                         messageToClient(message, client.getClientIP(), client.getClientPortUDP());
@@ -107,14 +121,18 @@ public class Server {
                         }
                         System.out.println("\nRQ#: " + messages[1]);
                         System.out.println("RECEIVED REQUEST: " + messages[0] + " " + client.info() + "\n");
+                        logWriter.lnlog("RQ#: " + messages[1] + "\n");
+                        logWriter.log("RECEIVED REQUEST: " + messages[0] + " " + client.info() + "\n\n");
 
                         if (!containsClient) {
                             clientsList.add(client);
                             writeJsonDatabase(); // used to turn clientsList into array of JSON objects and write to Client.json
                             System.out.println("CLIENT REGISTERED");
+                            logWriter.log("CLIENT REGISTERED\n");
                             message = "*REGISTERED - RQ#: " + messages[1] + "\n";
                         } else {
                             System.out.println("CLIENT NOT REGISTERED: Client name exists already");
+                            logWriter.log("CLIENT NOT REGISTERED: Client name exists already\n");
                             message = "*REGISTER-DENIED - RQ#: " + messages[1] + " - REASON: Name is already in use" +"\n";
                         }
 
@@ -128,6 +146,7 @@ public class Server {
                         for (i = 0; i < clientsList.size(); i++) {
                             if (messages[2].equals(clientsList.get(i).getClientName())) {
                                 System.out.println("CLIENT FOUND: " + clientsList.get(i).getClientName());
+                                logWriter.log("CLIENT FOUND: " + clientsList.get(i).getClientName() + "\n");
                                 containsClient = true;
                                 clientForDeregistration = clientsList.get(i);
                                 clientsList.remove(i);
@@ -139,9 +158,11 @@ public class Server {
 
                             message = "*DE-REGISTERED - RQ#: " + messages[1] + " Client: " + messages[2] + "\n";
                             System.out.println("MESSAGE TO CLIENT: DE-REGISTERED - RQ#: " + messages[1] + " Client: " + messages[2]);
+                            logWriter.log("MESSAGE TO CLIENT: DE-REGISTERED - RQ#: " + messages[1] + " Client: " + messages[2] + "\n");
 
                             messageToClient(message, clientForDeregistration.getClientIP(), clientForDeregistration.getClientPortUDP());
                             System.out.println("DE-REGISTER Successful");
+                            logWriter.log("DE-REGISTER Successful\n");
                         }
                         // No further action is taken by the server if the client was already not registered
                         break;
@@ -159,6 +180,7 @@ public class Server {
                                 containsClient = true;
                                 index = i;
                                 System.out.println("Client: " + client.getClientName() + " FOUND");
+                                logWriter.log("Client: " + client.getClientName() + " FOUND\n");
                             }
                         }
 
@@ -168,21 +190,29 @@ public class Server {
                                         && !client.getListOfFiles().get(i).isBlank()) {
                                     clientsList.get(index).getListOfFiles().add(client.getListOfFiles().get(i));
                                     System.out.println("File: '" + client.getListOfFiles().get(i) + "' ADDED");
+                                    logWriter.log("File: '" + client.getListOfFiles().get(i) + "' ADDED\n");
                                 } else {
                                     System.out.println("File: '" + client.getListOfFiles().get(i) + "' ALREADY EXISTS or IS BLANK");
+                                    logWriter.log("File: '" + client.getListOfFiles().get(i) + "' ALREADY EXISTS or IS BLANK\n");
                                 }
                             }
                             writeJsonDatabase();
                             System.out.println("\nClient files added to JSON database: " + pathClientJSON);
+                            logWriter.lnlog("Client files added to JSON database: " + pathClientJSON + "\n");
                             message = "*PUBLISHED - RQ#: " + messages[1] + "\n";
                             System.out.println("MESSAGE TO CLIENT: PUBLISHED - RQ#: " + messages[1]);
+                            logWriter.log("MESSAGE TO CLIENT: PUBLISHED - RQ#: " + messages[1] + "\n");
                             System.out.println("PUBLISH Successful\n");
+                            logWriter.log("PUBLISH Successful\n\n");
                         } else {
                             message = "*PUBLISH-DENIED - RQ#: " + messages[1] + " - REASON: Client name '"
                                     + client.getClientName() + "' does not exist" + "\n";
                             System.out.println("MESSAGE TO CLIENT: PUBLISH-DENIED - RQ#: " + messages[1]
                                     + "REASON: Client name '" + client.getClientName() + "' does not exist");
+                            logWriter.log("MESSAGE TO CLIENT: PUBLISH-DENIED - RQ#: " + messages[1]
+                                    + "REASON: Client name '" + client.getClientName() + "' does not exist\n");
                             System.out.println("PUBLISH DENIED: Client not registered\n");
+                            logWriter.log("PUBLISH DENIED: Client not registered\n\n");
                         }
 
                         messageToClient(message, client.getClientIP(), client.getClientPortUDP());
@@ -199,30 +229,39 @@ public class Server {
                                 containsClient = true;
                                 index = i;
                                 System.out.println("Client: " + client.getClientName() + " FOUND");
+                                logWriter.log("Client: " + client.getClientName() + " FOUND\n");
                             }
                         }
 
                         if (containsClient) {
-                            for (i = 0 ; i < client.getListOfFiles().size(); i++) {
+                            for (i = 0; i < client.getListOfFiles().size(); i++) {
                                 if (clientsList.get(index).getListOfFiles().contains(client.getListOfFiles().get(i))
                                         && !client.getListOfFiles().get(i).isBlank()) {
                                     clientsList.get(index).getListOfFiles().remove(client.getListOfFiles().get(i));
                                     System.out.println("File: '" + client.getListOfFiles().get(i) + "' REMOVED");
+                                    logWriter.log("File: '" + client.getListOfFiles().get(i) + "' REMOVED\n");
                                 } else {
                                     System.out.println("File: '" + client.getListOfFiles().get(i) + "' NOT FOUND or IS BLANK");
+                                    logWriter.log("File: '" + client.getListOfFiles().get(i) + "' NOT FOUND or IS BLANK\n");
                                 }
                             }
                             writeJsonDatabase();
                             System.out.println("Client files removed from JSON database: " + pathClientJSON);
+                            logWriter.log("Client files removed from JSON database: " + pathClientJSON + "\n");
                             message = "*REMOVED - RQ#: " + messages[1] + "\n";
                             System.out.println("MESSAGE TO CLIENT: REMOVED - RQ#: " + messages[1]);
                             System.out.println("REMOVE Successful");
+                            logWriter.log("MESSAGE TO CLIENT: REMOVED - RQ#: " + messages[1] + "\n");
+                            logWriter.log("REMOVE Successful\n");
                         } else {
                             message = "*REMOVE-DENIED - RQ#: " + messages[1] + " - REASON: Client name '"
                                     + client.getClientName() + "' does not exist" + "\n";
                             System.out.println("MESSAGE TO CLIENT: REMOVE-DENIED - RQ#: " + messages[1]
                                     + "REASON: Client name '" + client.getClientName() + "' does not exist");
                             System.out.println("REMOVE DENIED: Client not registered");
+                            logWriter.log("MESSAGE TO CLIENT: REMOVE-DENIED - RQ#: " + messages[1]
+                                    + "REASON: Client name '" + client.getClientName() + "' does not exist\n");
+                            logWriter.log("REMOVE DENIED: Client not registered\n");
                         }
 
                         messageToClient(message, client.getClientIP(), client.getClientPortUDP());
@@ -235,11 +274,13 @@ public class Server {
                                 containsClient = true;
                                 client = clientsList.get(i);
                                 System.out.println("Client: " + client.getClientName() + " FOUND");
+                                logWriter.log("Client: " + client.getClientName() + " FOUND\n");
                             }
                         }
 
                         if (containsClient) {
                             System.out.println("SENDING LIST OF REGISTERED CLIENTS TO REQUESTING CLIENT");
+                            logWriter.log("SENDING LIST OF REGISTERED CLIENTS TO REQUESTING CLIENT\n");
                             stringBuilder.append("*\n");
                             for (i = 0; i < clientsList.size(); i++) {
                                 stringBuilder.append(
@@ -257,6 +298,7 @@ public class Server {
                             message = stringBuilder.toString();
                             messageToClient(message, client.getClientIP(), client.getClientPortUDP());
                             System.out.println("LIST OF REGISTERED CLIENT SENT");
+                            logWriter.log("LIST OF REGISTERED CLIENT SENT\n");
                         }
                         break;
                     case "RETRIEVE-INFOT":
@@ -271,6 +313,7 @@ public class Server {
                                 containsClient = true;
                                 client = clientsList.get(i);
                                 System.out.println("Client: " + client.getClientName() + " FOUND");
+                                logWriter.log("Client: " + client.getClientName() + " FOUND\n");
                             }
                         }
                         for (i = 0; i < clientsList.size(); i++) {
@@ -278,6 +321,7 @@ public class Server {
                                 containsPeer = true;
                                 clientPeer = clientsList.get(i);
                                 System.out.println("Specific peer: " + messages[2] + " FOUND");
+                                logWriter.log("Specific peer: " + messages[2] + " FOUND\n");
                             }
                         }
 
@@ -288,11 +332,13 @@ public class Server {
                                     "\nCLIENT TCP SOCKET#: " + clientPeer.getClientPortTCP() +
                                     "\nLIST OF FILE(S): ");
                             System.out.println("SENDING CLIENT DATA TO REQUESTING CLIENT");
+                            logWriter.log("SENDING CLIENT DATA TO REQUESTING CLIENT\n");
                             for (i = 0; i < clientPeer.getListOfFiles().size(); i++) {
                                 stringBuilder.append("\n'" + clientPeer.getListOfFiles().get(i) + "'");
                             }
                             stringBuilder.append("\n");
                             System.out.println("CLIENT DATA TO REQUESTING CLIENT SENT");
+                            logWriter.log("CLIENT DATA TO REQUESTING CLIENT SENT\n");
                         } else if (containsClient && !containsPeer) {
                             stringBuilder.append("RETRIEVE-ERROR - RQ#: " + messages[1] + " - REASON: Requested name " + messages[2] + " does not exist");
                         }
@@ -312,6 +358,7 @@ public class Server {
                                 containsClient = true;
                                 client = clientsList.get(i);
                                 System.out.println("Client: " + client.getClientName() + " FOUND");
+                                logWriter.log("Client: " + client.getClientName() + " FOUND\n");
                             }
                         }
                         if (containsClient) {
@@ -323,29 +370,32 @@ public class Server {
                                             "\nCLIENT TCP SOCKET#: " + clientsList.get(i).getClientPortTCP() + "\n");
                                     System.out.println("CLIENT: " + clientsList.get(i).getClientName() +
                                             " has the file '" + messages[2] + "'");
+                                    logWriter.log("CLIENT: " + clientsList.get(i).getClientName() +
+                                            " has the file '" + messages[2] + "'\n");
                                     containsFile = true;
                                 }
                             }
                             if (containsFile) {
-                                System.out.println("contains file:" + containsFile);
+                                System.out.println("Contains file:" + containsFile);
+                                logWriter.log("Contains file:" + containsFile);
                                 stringBuilder.append("*SEARCH-FILE - RQ: " + messages[1] + " FILE NAME: '" + messages[2]);
                                 stringBuilder.append(tempBuild.toString());
 
                                 System.out.println(stringBuilder);
                                 System.out.println("SEARCH-FILE response to client " + messages[3] + " sent");
+                                logWriter.log(stringBuilder + "\n");
+                                logWriter.log("SEARCH-FILE response to client " + messages[3] + " sent\n");
 
                             } else if (!containsFile) {
                                 stringBuilder.append("*SEARCH-ERROR - RQ: " + messages[1] + " FILE NAME: '" + messages[2] + "' NOT FOUND\n");
                                 System.out.println("SEARCH-ERROR response to client " + messages[3] + " sent");
+                                logWriter.log("SEARCH-ERROR response to client " + messages[3] + " sent\n");
                             }
 
                                 message = stringBuilder.toString();
                                 messageToClient(message, client.getClientIP(), client.getClientPortUDP());
 
                         }
-
-
-
                         break;
                     case "UPDATE-CONTACT":
                         gson = new Gson();
@@ -375,6 +425,7 @@ public class Server {
                                     clientsList.get(i).setClientPortUDP(clientNew.getClientPortUDP());
                                     clientsList.get(i).setClientPortTCP(clientNew.getClientPortTCP());
                                     System.out.println("Client contact information updated");
+                                    logWriter.log("Client contact information updated\n");
                                 }
                             }
                             writeJsonDatabase();
@@ -382,18 +433,25 @@ public class Server {
                             message = "UPDATE-CONFIRMED* - RQ#: *" + messages[1] + "* " + clientNew + "*" + messages[3];
                             System.out.println("MESSAGE TO CLIENT: UPDATE-CONFIRMED - RQ#: " + messages[1] + " " + clientNew);
                             System.out.println("UPDATE-CONTACT Successful");
+                            logWriter.log("Client information updated in JSON database: " + pathClientJSON + "\n");
+                            logWriter.log("MESSAGE TO CLIENT: UPDATE-CONFIRMED - RQ#: " + messages[1] + " " + clientNew + "\n");
+                            logWriter.log("UPDATE-CONTACT Successful\n");
                         }
                         else if (!containsOldClient) {
                             // client is not registered
                             message = "UPDATE-DENIED* - RQ#: *" + messages[1] + "*" + clientOld.getClientName() + "* REASON: client is not registered*" + messages[2];
                             System.out.println("MESSAGE TO CLIENT: UPDATE-DENIED - RQ#: " + messages[1] + " " + clientOld);
                             System.out.println("UPDATE-DENIED: Client not registered");
+                            logWriter.log("MESSAGE TO CLIENT: UPDATE-DENIED - RQ#: " + messages[1] + " " + clientOld + "\n");
+                            logWriter.log("UPDATE-DENIED: Client not registered\n");
                         }
                         else if (containsNewClient) {
                             // can't change to this name as it in use
                             message = "UPDATE-DENIED* - RQ#: *" + messages[1] + "*" + clientNew.getClientName() + "* REASON: new client name is in use*" + messages[2];
                             System.out.println("MESSAGE TO CLIENT: UPDATE-DENIED - RQ#: " + messages[1] + " " + clientNew);
                             System.out.println("UPDATE-DENIED: New name is in use");
+                            logWriter.log("MESSAGE TO CLIENT: UPDATE-DENIED - RQ#: " + messages[1] + " " + clientNew + "\n");
+                            logWriter.log("UPDATE-DENIED: New name is in use\n");
                         }
                         messageToClient(message, clientOld.getClientIP(), clientOld.getClientPortUDP());
                         break;
@@ -411,11 +469,10 @@ public class Server {
     public static void main(String[] args) throws IOException {
 
 
-
         DatagramSocket datagramSocket = new DatagramSocket(datagramSocketPort);
+
+
         Server server = new Server(datagramSocket);
-
-
         server.readJsonDatabase();
 
 
@@ -425,13 +482,21 @@ public class Server {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                System.out.println("Enter 1 to print list of register clients.");
+                System.out.println("Enter 0/EXIT to end program" +
+                        "\nEnter 1 to print list of register clients.");
                 Scanner scanner = new Scanner(System.in);
                 String input;
                 while (true) {
                     input = scanner.nextLine();
-                    if (input.equals("1")) {
-                        printClientListData();
+                    switch (input.toUpperCase()) {
+                        case "1":
+                            try { printClientListData();} catch (IOException e) {e.printStackTrace();}
+                            break;
+                        case "0":
+                        case "EXIT":
+                            System.out.println("Exiting... ");
+                            System.exit(0);
+                            break;
                     }
                 }
             }
@@ -458,7 +523,7 @@ public class Server {
         clientsList = clients_List;
     }
 
-    public static void parseClientObject(JSONObject clientJson) throws UnknownHostException {
+    public static void parseClientObject(JSONObject clientJson) throws IOException {
         Client client = new Client();
 
         JSONObject clientObject = (JSONObject) clientJson.get("client");
@@ -482,7 +547,7 @@ public class Server {
     }
 
 
-    public static void printClientListData() {
+    public static void printClientListData() throws IOException {
         System.out.println("\nCurrent list of clients registered in the server.");
         System.out.println("Clients Registered: " + clientsList.size());
         for (int i = 0; i < clientsList.size(); i++) {
@@ -535,7 +600,7 @@ public class Server {
             clientJsonList.forEach(clientJson -> {
                 try {
                     parseClientObject((JSONObject)clientJson);
-                } catch (UnknownHostException e) {
+                } catch (IOException e ) {
                     e.printStackTrace();
                 }
             });

@@ -1,0 +1,65 @@
+2021-11-30 00:29:08 -:- Generating default client data...
+2021-11-30 00:29:08 -:- Retrieving your IP address...
+2021-11-30 00:29:08 -:- Get host name: 172.26.112.1
+2021-11-30 00:29:08 -:- Generating random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 00:29:08 -:- Client generated.
+
+CLIENT NAME: soapslabsoap
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 2389
+TCP SOCKET#: 2552
+2021-11-30 00:29:08 -:- Running client...
+2021-11-30 00:39:40 -:- Generating default client data...
+2021-11-30 00:39:40 -:- Retrieving your IP address...
+2021-11-30 00:39:40 -:- Get host name: 172.26.112.1
+2021-11-30 00:39:40 -:- Generating random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 00:39:40 -:- Client generated.
+
+CLIENT NAME: tongueriverchild
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 6297
+TCP SOCKET#: 8224
+2021-11-30 00:39:40 -:- Running client...
+2021-11-30 00:40:51 -:- Generating default client data...
+2021-11-30 00:40:51 -:- Retrieving your IP address...
+2021-11-30 00:40:51 -:- Get host name: 172.26.112.1
+2021-11-30 00:40:51 -:- Generating random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 00:40:51 -:- Client generated.
+
+CLIENT NAME: sympathyarchlake
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 5177
+TCP SOCKET#: 4762
+2021-11-30 00:40:51 -:- Running client...
+2021-11-30 00:59:14 -:- Generating default client data...
+2021-11-30 00:59:14 -:- Retrieving your IP address...
+2021-11-30 00:59:14 -:- Get host name: 172.26.112.1
+2021-11-30 00:59:14 -:- Generation random UDP and TCP port numbers. Range 1000 - 9999
+2021-11-30 00:59:14 -:- Client generated.
+
+CLIENT NAME: yardtwopride
+CLIENT IP: 172.26.112.1
+UDP SOCKET#: 3718
+TCP SOCKET#: 3048
+2021-11-30 00:59:14 -:- Running client...
+2021-11-30 00:59:44 -:- LOGIN
+
+2021-11-30 00:59:44 -:- Enter client name to login as
+2021-11-30 01:00:20 -:- songcousinwealth
+2021-11-30 01:00:20 -:- MESSAGE TO SERVER: LOGIN 0 songcousinwealth
+2021-11-30 01:00:20 -:- RQ# 0 LOGIN Command sent to server
+2021-11-30 01:00:20 -:- MESSAGE FROM SERVER: LOGGED-IN - RQ#: 0 songcousinwealth
+2021-11-30 01:00:43 -:- PUBLISH
+
+2021-11-30 01:00:43 -:- Specify file(s) to be published. Separate with space(s). Surround with quotations to encompass files containing spaces.
+2021-11-30 01:00:51 -:- 24.txt
+2021-11-30 01:00:51 -:- MESSAGE TO SERVER: PUBLISH 1 songcousinwealth [24.txt]
+2021-11-30 01:00:51 -:- RQ# 1 PUBLISH Command sent to server
+2021-11-30 01:00:51 -:- MESSAGE FROM SERVER: PUBLISHED - RQ#: 1
+
+2021-11-30 01:01:04 -:- REGISTER
+2021-11-30 01:01:04 -:- MESSAGE TO SERVER: REGISTER 2 songcousinwealth 172.26.112.1 4781 1166
+2021-11-30 01:01:04 -:- RQ# 2 REGISTER Command sent to server
+2021-11-30 01:01:04 -:- MESSAGE FROM SERVER: REGISTER-DENIED - RQ#: 2 - REASON: Name is already in use
+
+2021-11-30 01:02:09 -:- EXIT
