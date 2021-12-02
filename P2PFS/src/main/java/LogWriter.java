@@ -25,17 +25,17 @@ public class LogWriter {
 
     public void log(String message) throws IOException {
         timeStamp = new Timestamp(System.currentTimeMillis());
-        logWriter.append(simpleDF.format(timeStamp)  + " -:- " + message);
+        logWriter.append(simpleDF.format(timeStamp)  + " : " + message);
         logWriter.flush();
     }
 
     public void lnlog(String message) throws IOException {
         timeStamp = new Timestamp(System.currentTimeMillis());
-        logWriter.append("\n" + simpleDF.format(timeStamp)  + " -:- " + message);
+        logWriter.append("\n" + simpleDF.format(timeStamp)  + " : " + message);
         logWriter.flush();
     }
 
-    public void delete(File logFile) throws IOException {
+    private void delete(File logFile) throws IOException {
         // if file size is larger than 50 MB than log will be deleted
         if (logFile.length() > logFileLimit) {
             System.out.println("Log file limit of " + logFileLimit/1000000.0f + " reached, deleting all logged data");

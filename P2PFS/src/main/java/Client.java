@@ -125,7 +125,7 @@ public class Client implements Runnable {
                 !validateIPv4(args[1]) ||
                 !validatePortNumber(args[2]) ||
                 !validatePortNumber(args[3])) {
-            System.out.println("Invalid arguments submitted");
+            System.out.println("Invalid arguments submitted\n");
             client = new Client();
             client.generateClient();
             System.out.println("Client generated.\n" +  client.info());
@@ -152,6 +152,7 @@ public class Client implements Runnable {
         Gson gson;
         Scanner scannerInput = new Scanner(System.in);
         Scanner scannerFileInput = new Scanner(System.in);
+        ArrayList<String> inputArray = new ArrayList<String>();
 
 
         datagramClientSocket = new DatagramSocket(null);
@@ -175,7 +176,7 @@ public class Client implements Runnable {
         System.out.println("Enter 3 to print to display client info");
         System.out.println("Enter 4 to toggle to verbose file transfer");
         System.out.println("Enter 5 to reconfigure server IP address");
-        System.out.println("Running client..."); logWriter.log("Running client...\n");
+        System.out.println("\nRunning client..."); logWriter.log("\nRunning client...\n");
 
         new Thread(new Runnable() {
             @Override
@@ -249,6 +250,7 @@ public class Client implements Runnable {
                     }
                     break;
                 case "5":
+                    System.out.println("Enter server IP: ");
                     String newIP = scannerInput.nextLine();
 
                     if (validateIPv4(newIP)) {
@@ -359,7 +361,7 @@ public class Client implements Runnable {
                     System.out.println("Enter name of peer to request information from");
                     logWriter.log("Enter name of peer to request information from\n");
                     inputName = scannerInput.nextLine();
-                    ArrayList<String> inputArray = removeQuotes(inputName);
+                    inputArray = removeQuotes(inputName);
                     inputName = inputArray.get(0); logWriter.log(inputName + "\n");
                     message = "RETRIEVE-INFOT" + "*" + Client.RQ + "*" + inputName + "*" + clientName;
                     System.out.println("MESSAGE TO SERVER: " + "RETRIEVE-INFOT" + " " + Client.RQ + " " + inputName);
@@ -407,22 +409,29 @@ public class Client implements Runnable {
                 case "DOWNLOAD":
                     System.out.println("Enter IP and TCP port of client in one line to connect to: ");
                     inputName = scannerInput.nextLine();
-                    inputArray = removeQuotes(inputName);
+                    if (!inputName.isEmpty()) {
+                        inputArray = removeQuotes(inputName);
+                    }
 
                     String filename;
                     System.out.println("Enter name of file to download: ");
                     filename = scannerFileInput.nextLine();
-                    ArrayList<String> inputs = removeQuotes(filename);
-                    filename = inputs.get(0);
+                    if (!filename.isBlank()) {
+                        ArrayList<String> inputs = removeQuotes(filename);
+                        filename = inputs.get(0);
+                    }
+
+                    if (inputArray.size() == 2 || !filename.isBlank()) {
                     if (validateIPv4(inputArray.get(0)) && validatePortNumber(inputArray.get(1))) {
-                        System.out.println("Sending connection and download request to peer");
-                        clientDownloadRequest(InetAddress.getByName(inputArray.get(0)), inputArray.get(1), filename);
-                        Client.currentRQ = Client.RQ;
-                        Client.RQ++;
+                            System.out.println("Sending connection and download request to peer");
+                            clientDownloadRequest(InetAddress.getByName(inputArray.get(0)), inputArray.get(1), filename);
+                            Client.currentRQ = Client.RQ;
+                            Client.RQ++;
+                        }
                     } else {
                         System.out.println("Invalid inputs submitted");
                     }
-
+                    inputArray = new ArrayList<String>();
                     break;
                 default:
             }
@@ -464,6 +473,7 @@ public class Client implements Runnable {
         new Thread(new Runnable() {
             @Override
             public void run() {
+
                 try {
                     DataOutputStream outputStreamToClient = new DataOutputStream(socket.getOutputStream());
                     BufferedReader inputStreamFromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -480,6 +490,8 @@ public class Client implements Runnable {
                                 if (clientSockets.get(i).getPort() == socket.getPort()) {
                                     clientSockets.get(i);
                                     running = false;
+                                    System.out.println("CONNECTION CLOSED");
+                                    logWriter.log("CONNECTION CLOSED");
                                 }
                             }
                         }
@@ -495,16 +507,29 @@ public class Client implements Runnable {
                             System.out.println("Reading content... ");
                             logWriter.log("Reading content... \n");
                             // read entire file and put into an array of bytes
-                            byte[] fileContent = Files.readAllBytes(Paths.get(pathFiles + messages[2])); // "src/main/files/" + "filename"
+                            byte[] fileContent = new byte[0];
+                            try {
+                                fileContent = Files.readAllBytes(Paths.get(pathFiles + messages[2])); // "src/main/files/" + "filename"
+                            }
+                            catch (IOException e) {
+                                System.out.println("\nFILE '" + messages[2] + "' NOT FOUND");
+                                outputStreamToClient.writeBytes("DOWNLOAD-ERROR" + "*" + currentRQ + "*" + "REASON: FILE '" + messages[2] + "' NOT FOUND\n");
+                                System.out.println("MESSAGE TO PEER: DOWNLOAD-ERROR - RQ#: " + currentRQ + " - REASON: FILE '" + messages[2] + "' NOT FOUND");
+                                logWriter.lnlog("FILE '" + messages[2] + "' NOT FOUND\n");
+                                logWriter.log("DOWNLOAD-ERROR" + "*" + currentRQ + "*" + "REASON: FILE '" + messages[2] + "' NOT FOUND\n");
+                            }
+
+
                             ArrayList<byte[]> bytesList = new ArrayList<byte[]>();
                             ArrayList<String> byteStringList = new ArrayList<String>();
                             int limit = 200; // chunks are limited to 200 bytes max
                             byte[] byter = new byte[limit];
 
-                            System.out.println("File length: " + fileContent.length + " bytes / "
-                                    + (fileContent.length / 1000.0f) + " kilobytes\n");
-                            logWriter.log("File length: " + fileContent.length + " bytes / "
-                                    + (fileContent.length / 1000.0f) + " kilobytes\n\n");
+                            String fileLength = "File length: " + fileContent.length + " bytes / "
+                                    + (fileContent.length / 1000.0f) + " kilobytes / "
+                                    + (fileContent.length / 1000000.0f) + " megabytes\n";
+                            System.out.println(fileLength);
+                            logWriter.log(fileLength + "\n");
 
                             for (int i = 0; i < fileContent.length; i++) {
                                 // DEBUG
@@ -583,8 +608,8 @@ public class Client implements Runnable {
                         }
                         // Thread.sleep(10); TODO
                     }
-                } catch (Exception e) {
-
+                } catch (IOException e) {
+                    System.out.println("FILE '" + e.getMessage() + "' NOT FOUND");
                 }
 
             }
@@ -618,11 +643,20 @@ public class Client implements Runnable {
                         message = inputStreamFromClient.readLine();
                         String[] messages = message.split("\\*");
                         if (enableVerboseFileTransfer) {
-                            System.out.println("MESSAGE FROM PEER: " + messages[0] + " - RQ#: " + messages[1]
-                                    + " '" + messages[2] + "' - CHUNK#: " + messages[3] + " DATA: " + messages[4]);
-                            logWriter.log("MESSAGE FROM PEER: " + messages[0] + " - RQ#: " + messages[1]
-                                    + " '" + messages[2] + "' - CHUNK#: " + messages[3] + " DATA: " + messages[4] + "\n");
+                            if (messages[0].equals("FILE") || messages[0].equals("FILE-END")) {
+                                System.out.println("MESSAGE FROM PEER: " + messages[0] + " - RQ#: " + messages[1]
+                                        + " '" + messages[2] + "' - CHUNK#: " + messages[3] + " DATA: " + messages[4]);
+                                logWriter.log("MESSAGE FROM PEER: " + messages[0] + " - RQ#: " + messages[1]
+                                        + " '" + messages[2] + "' - CHUNK#: " + messages[3] + " DATA: " + messages[4] + "\n");
+                            }
                         }
+                        if (messages[0].equals("DOWNLOAD-ERROR")) {
+                                System.out.println("MESSAGE FROM PEER: " + messages[0] + " - RQ#: "
+                                        + messages[1] + " - " + messages[2]);
+                                logWriter.log("MESSAGE FROM PEER: " + messages[0] + " - RQ#: "
+                                        + messages[1] + " - " + messages[2] + "\n");
+                            }
+
 
 
                         if (messages[0].equals("FILE") || messages[0].equals("FILE-END")) {
@@ -824,6 +858,11 @@ public class Client implements Runnable {
         // XXX.XXX.XXX.XXX where X = [0-9]+
         String ipError = "The IP address format is incorrect: ";
 
+        if (ipAddress == null) {
+            System.out.println("ERROR: IP address is null");
+            return false;
+        }
+
         if (ipAddress.isBlank() || ipAddress.contains(" ")) {
             System.out.println(ipError + ipAddress + " is either blank or contains spaces");
             logWriter.log(ipError + ipAddress + " is either blank or contains spaces\n");
@@ -868,6 +907,10 @@ public class Client implements Runnable {
      */
     public static boolean validatePortNumber(String portNumber) throws IOException {
 
+        if (portNumber == null) {
+            System.out.println("ERROR: Port number is null");
+            return false;
+        }
        int portNumberInteger = Integer.parseInt(portNumber);
        if (portNumberInteger < 1000 || portNumberInteger > 9999) {
            System.out.println("Incorrect port number used: " + portNumber + " ...should be from 1000 to 9999");

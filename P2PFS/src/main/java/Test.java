@@ -13,10 +13,11 @@ public class Test {
 
 
         System.out.println("Ello Gov'nor\n");
+        FileOutputStream fileOutputStream;
 
-        byte[] fileContent = Files.readAllBytes(Paths.get("src/main/files/shock.txt"));
+        byte[] fileContent = Files.readAllBytes(Paths.get("src/main/files/eclipse.jpg"));
         ArrayList<byte[]> bytesList = new ArrayList<byte[]>();
-        int limit = 100;
+        int limit = 200;
         byte[] byter = new byte[limit];
        System.out.println("fileContent.length: " + fileContent.length + " bytes or " + (fileContent.length / 1000.0f) + " kilobytes\n");
 
@@ -54,6 +55,10 @@ public class Test {
         System.out.println("\nbytesList.size(): " + bytesList.size());
         for (int i = 0; i < bytesList.size(); i++) {
             System.out.println("bytesList.get(" + i + ").length: " +  bytesList.get(i).length + " Data: " + new String(bytesList.get(i)));
+            fileOutputStream = new FileOutputStream("src/main/downloads/eclipse_" + i + ".jpg");
+            fileOutputStream.write(bytesList.get(i));
+            fileOutputStream.flush();
+            fileOutputStream.close();
         }
 
         fileContent[0] = (byte) 85;
