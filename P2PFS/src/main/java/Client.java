@@ -491,7 +491,7 @@ public class Client implements Runnable {
                                     clientSockets.get(i);
                                     running = false;
                                     System.out.println("CONNECTION CLOSED");
-                                    logWriter.log("CONNECTION CLOSED");
+                                    logWriter.log("CONNECTION CLOSED\n");
                                 }
                             }
                         }
